@@ -21,14 +21,14 @@ class Display() {
     private var height = 0f
 
     constructor(config: NativeObject?) : this() {
-        setBackgroundColor(config.getOption("backgroundColor", 0x50000000).toLong())
-        setTextColor(config.getOption("textColor", 0xffffffff).toLong())
+        setBackgroundColor(config.getOption("backgroundColor", 0x50000000))
+        setTextColor(config.getOption("textColor", 0xffffffff))
         setBackground(config.getOption("background", Background.NONE))
         setAlign(config.getOption("align", Text.Align.LEFT))
         setOrder(config.getOption("order", Order.NORMAL))
-        setX(config.getOption("x", 0f).toFloat())
-        setY(config.getOption("y", 0f).toFloat())
-        setMinWidth(config.getOption("minWidth", 0f).toFloat())
+        setX(config.getOption("x", 0f))
+        setY(config.getOption("y", 0f))
+        setMinWidth(config.getOption("minWidth", 0f))
     }
 
     fun getTextColor(): Long = textColor

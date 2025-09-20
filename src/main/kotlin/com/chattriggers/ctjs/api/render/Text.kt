@@ -33,17 +33,17 @@ class Text {
 
     constructor(string: String, config: NativeObject) {
         setString(string)
-        setColor(config.getOption("color", 0xffffffff).toLong())
-        setFormatted(config.getOption("formatted", true).toBoolean())
-        setShadow(config.getOption("shadow", false).toBoolean())
+        setColor(config.getOption("color", 0xffffffff))
+        setFormatted(config.getOption("formatted", true))
+        setShadow(config.getOption("shadow", false))
         setAlign(config.getOption("align", Align.LEFT))
-        setBackground(config.getOption("background", false).toBoolean())
-        setBackgroundColor(config.getOption("backgroundColor", 0x00000000).toLong())
-        setX(config.getOption("x", 0f).toFloat())
-        setY(config.getOption("y", 0f).toFloat())
-        setMaxLines((config.getOption("maxLines", Int.MAX_VALUE)).toDouble().toInt())
-        setScale(config.getOption("scale", 1f).toFloat())
-        setMaxWidth(config.getOption("maxWidth", 0).toInt())
+        setBackground(config.getOption("background", false))
+        setBackgroundColor(config.getOption("backgroundColor", 0x00000000))
+        setX(config.getOption("x", 0f))
+        setY(config.getOption("y", 0f))
+        setMaxLines((config.getOption("maxLines", Int.MAX_VALUE)))
+        setScale(config.getOption("scale", 1f))
+        setMaxWidth(config.getOption("maxWidth", 0))
     }
 
     fun getString(): String = string
