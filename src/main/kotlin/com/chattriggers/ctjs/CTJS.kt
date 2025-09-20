@@ -118,7 +118,9 @@ class CTJS : ClientModInitializer {
 
         @JvmStatic
         fun load(asCommand: Boolean = true) {
-            Client.getMinecraft().options.write()
+            Client.scheduleTask {
+                Client.getMinecraft().options.write()
+            }
             unload(asCommand = false)
 
             if (asCommand)
@@ -126,7 +128,9 @@ class CTJS : ClientModInitializer {
 
             thread {
                 ModuleManager.setup()
-                Client.getMinecraft().options.load()
+                Client.scheduleTask {
+                    Client.getMinecraft().options.load()
+                }
 
                 // Need to set isLoaded to true before running modules, otherwise custom triggers
                 // activated at the top level will not work
