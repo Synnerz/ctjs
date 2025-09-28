@@ -95,6 +95,7 @@ object ConsoleHostProcess : Initializer {
                 PORT.toString(),
                 ProcessHandle.current().pid().toString(),
             )
+            .inheritIO()
             .start()
 
         while (running) {
