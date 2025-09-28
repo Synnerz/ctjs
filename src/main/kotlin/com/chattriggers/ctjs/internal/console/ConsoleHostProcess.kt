@@ -8,7 +8,6 @@ import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import gg.essential.universal.UDesktop
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.option.KeyBinding
@@ -89,13 +88,13 @@ object ConsoleHostProcess : Initializer {
             .directory(File("."))
             .command(
                 Path(System.getProperty("java.home"), "bin", "java").toString(),
-                "-cp",
-                urls,
                 ConsoleClientProcess::class.qualifiedName,
                 PORT.toString(),
                 ProcessHandle.current().pid().toString(),
             )
-            .inheritIO()
+            .apply {
+                environment()["CLASSPATH"] = urls
+            }
             .start()
 
         while (running) {
