@@ -50,8 +50,8 @@ object NBT {
     fun toArray(nbt: NBTTagList): NativeArray = nbt.toArray()
 
     private fun Any.toNBT(options: NativeObject?): MCNbtBase {
-        val preferArraysOverLists = options.getOption("preferArraysOverLists", false).toBoolean()
-        val coerceNumericStrings = options.getOption("coerceNumericStrings", false).toBoolean()
+        val preferArraysOverLists = options.getOption<Boolean>("preferArraysOverLists", false)
+        val coerceNumericStrings = options.getOption<Boolean>("coerceNumericStrings", false)
 
         return when (this) {
             is NativeObject -> MCNbtCompound().apply {

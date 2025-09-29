@@ -57,13 +57,13 @@ object BossBars {
      */
     @JvmStatic
     fun addBossBar(obj: NativeObject): BossBar {
-        val name = obj.getOption("name", "")
-        val percent = obj.getOption("percent", 1f).toFloat().coerceIn(0f..1f)
+        val name = obj.getOption<String>("name", "")
+        val percent = obj.getOption<Float>("percent", 1f).coerceIn(0f..1f)
         val color = Color.from(obj.getOption("color", Color.WHITE))
         val style = Style.from(obj.getOption("sections", Style.ONE))
-        val shouldDarkenSky = obj.getOption("darkenSky", false).toBoolean()
-        val dragonMusic = obj.getOption("dragonMusic", false).toBoolean()
-        val shouldThickenFog = obj.getOption("thickenFog", false).toBoolean()
+        val shouldDarkenSky = obj.getOption<Boolean>("darkenSky", false)
+        val dragonMusic = obj.getOption<Boolean>("dragonMusic", false)
+        val shouldThickenFog = obj.getOption<Boolean>("thickenFog", false)
 
         val uuid = UUID.randomUUID()
 
