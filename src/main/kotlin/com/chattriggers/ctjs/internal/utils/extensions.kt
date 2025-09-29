@@ -32,8 +32,8 @@ inline fun <reified T> NativeObject?.get(key: String): T? {
     return this?.get(key) as? T
 }
 
-fun NativeObject?.getOption(key: String, default: Any): String {
-    return (this?.get(key) ?: default).toString()
+fun <T> NativeObject?.getOption(key: String, default: Any): T {
+    return (this?.get(key) ?: default) as T
 }
 
 // Note: getOrDefault<Number>(...).toInt/Double/Float() should be preferred
