@@ -15,7 +15,12 @@ class CTMixinPlugin : IMixinConfigPlugin {
     override fun onLoad(mixinPackage: String?) {
         redirectIO()
 
-        Mappings.initialize()
+        try {
+            // FIXME: change this whenever the mappings are fully done
+            //  adding a try catch for now since it crashes the "engine"
+            Mappings.initialize()
+        } catch (_: Exception) {}
+
         ModuleManager.setup()
         MixinExtrasBootstrap.init()
 

@@ -69,13 +69,13 @@ object World {
     fun getRainingStrength(): Float = toMC()?.getRainGradient(Renderer.partialTicks) ?: -1f
 
     @JvmStatic
-    fun getTime(): Long = toMC()?.time ?: -1L
+    fun getTime(): Long = toMC()?.levelProperties?.time ?: -1L
 
     @JvmStatic
     fun getDifficulty(): Settings.Difficulty? = toMC()?.difficulty?.let(Settings.Difficulty::fromMC)
 
     @JvmStatic
-    fun getMoonPhase(): Int = toMC()?.moonPhase ?: -1
+    fun getMoonPhase(): Int = toMC()?.moonPhase?.method_75261() ?: -1
 
     /**
      * Gets the [Block] at a location in the world.

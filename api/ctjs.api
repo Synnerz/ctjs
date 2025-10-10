@@ -503,7 +503,7 @@ public final class com/chattriggers/ctjs/api/client/Settings$VideoWrapper {
 	public final fun getClouds ()Lcom/chattriggers/ctjs/api/client/Settings$CloudRenderMode;
 	public final fun getEntityShadows ()Ljava/lang/Boolean;
 	public final fun getFullscreen ()Ljava/lang/Boolean;
-	public final fun getGraphicsMode ()Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
+	public final fun getGraphicsMode ()Ljava/lang/Void;
 	public final fun getGuiScale ()Ljava/lang/Integer;
 	public final fun getMaxFrameRate ()Ljava/lang/Integer;
 	public final fun getMipmapLevels ()Ljava/lang/Integer;

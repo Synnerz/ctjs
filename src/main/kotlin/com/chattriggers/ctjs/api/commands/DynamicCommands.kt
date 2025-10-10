@@ -682,7 +682,7 @@ object DynamicCommands : CommandCollection() {
             Player.getPos().toVec3d(),
             Player.getRotation(),
             null,
-            0,
+            { true }, // TODO: figure out if `true` should be returned or `false`
             Player.getName(),
             Player.getDisplayName(),
             null,
