@@ -3,9 +3,6 @@ package com.chattriggers.ctjs.internal.mixins;
 import com.chattriggers.ctjs.api.message.ChatLib;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
-import net.minecraft.client.gui.hud.MessageIndicator;
-import net.minecraft.network.message.MessageSignatureData;
-import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -31,7 +28,7 @@ public class ChatHudMixin {
         method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V",
         at = @At(
             value = "INVOKE",
-            target = "Ljava/util/List;remove(I)Ljava/lang/Object;",
+            target = "Ljava/util/List;removeLast()Ljava/lang/Object;",
             shift = At.Shift.BEFORE
         )
     )
