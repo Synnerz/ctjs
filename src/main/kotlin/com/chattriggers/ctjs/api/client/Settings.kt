@@ -138,11 +138,10 @@ object Settings {
     }
 
     class VideoWrapper {
-        // FIXME: actually implement these
-        fun getGraphicsMode() = null // GraphicsMode.fromMC(toMC().graphicsMode.value)
+        fun getGraphicsMode() = GraphicsMode.fromMC(toMC().preset.value)
 
         fun setGraphicsMode(mode: GraphicsMode) {
-//            toMC().graphicsMode.value = mode.toMC()
+            toMC().preset.value = mode.toMC()
         }
 
         fun getRenderDistance() = toMC().viewDistance.value
