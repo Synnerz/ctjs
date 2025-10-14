@@ -62,7 +62,7 @@ With CT's register system, you can listen to custom events that we emit and reac
 
 ### Getting Started
 
-To begin, [download and install Fabric](https://fabricmc.net/wiki/install) for one of the supported versions, then head over to our [releases page](https://github.com/Synnerz/ctjs/releases) and download the latest version. The mod is installed like any mod; just drag it into your mods folder. Once installed, you can import modules in-game by typing `/ct import <moduleName>`, where `<moduleName>` is the name of the module. You can browse the available modules on [our website](https://www.chattriggers.com/modules).
+To begin, [download and install Fabric](https://fabricmc.net/wiki/install) for one of the supported versions, then head over to our [releases page](https://github.com/Synnerz/ctjs/releases) or [modrinth page](https://modrinth.com/mod/ctjs) and download the latest version. The mod is installed like any mod; just drag it into your mods folder. Once installed, you can import modules in-game by typing `/ct import <moduleName>`, where `<moduleName>` is the name of the module. You can browse the available modules on [our website](https://www.chattriggers.com/modules).
 
 ### Writing Modules
 
