@@ -1,10 +1,10 @@
 [versions]
 # Library versions
-minecraft = "25w41a"
-yarn = "25w41a+build.2"
+minecraft = "25w42a"
+yarn = "25w42a+build.2"
 
 loader = "0.17.3"
-fabric-api = "0.135.1+1.21.11"
+fabric-api = "0.135.2+1.21.11"
 fabric-kotlin = "1.13.2+kotlin.2.1.20"
 
 mapping-io = "0.6.1"
