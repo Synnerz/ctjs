@@ -170,12 +170,12 @@ class Text {
             }
 
             if (background) {
-                val ox = (backgroundX ?: xHolder) as Int
+                val ox = (backgroundX ?: xHolder)
 
                 ctx.fill(
                     ox,
                     yHolder,
-                    ox + (backgroundWidth ?: width) as Int,
+                    ox + (backgroundWidth ?: width),
                     yHolder + getHeight().toInt(),
                     backgroundColor.toInt()
                 )
@@ -183,8 +183,8 @@ class Text {
 
             for (i in 0 until maxLines) {
                 if (i >= lines.size) break
-                ctx.drawText(Renderer.getFontRenderer(), lines[i], xHolder as Int, yHolder, color.toInt(), shadow)
-                yHolder += (scale * 10).toInt()
+                ctx.drawText(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
+                yHolder += 10
             }
             ctx.matrices.popMatrix()
         }
