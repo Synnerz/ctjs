@@ -181,7 +181,7 @@ class Text {
             for (i in 0 until maxLines) {
                 if (i >= lines.size) break
                 Renderer.drawString(lines[i], xHolder, yHolder, color, shadow)
-                yHolder += scale * 10
+                yHolder += 10
             }
             Renderer.disableBlend()
             Renderer.popMatrix()
