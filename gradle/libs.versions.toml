@@ -14,7 +14,7 @@ textarea = "3.2.0"
 serialization = "1.5.1"
 koffee = "315bc11234"
 
-universalcraft = "430"
+universalcraft = "436"
 elementa = "710"
 vigilance = "312"
 
@@ -43,7 +43,7 @@ textarea = { module = "com.fifesoft:rsyntaxtextarea", version.ref = "textarea" }
 serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 koffee = { module = "com.github.ChatTriggers:koffee", version.ref = "koffee" }
 
-universalcraft = { module = "gg.essential:universalcraft-1.21.6-fabric", version.ref = "universalcraft" }
+universalcraft = { module = "gg.essential:universalcraft-1.21.9-fabric", version.ref = "universalcraft" }
 elementa = { module = "gg.essential:elementa", version.ref = "elementa" }
 vigilance = { module = "gg.essential:vigilance", version.ref = "vigilance" }
 
