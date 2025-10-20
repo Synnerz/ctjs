@@ -137,8 +137,8 @@ class Text {
 
     fun getHeight(): Float {
         return if (lines.size > 1)
-            lines.size.coerceAtMost(maxLines) * 10
-        else 10
+            lines.size.coerceAtMost(maxLines) * 10f
+        else 10f
     }
 
     fun exceedsMaxLines(): Boolean {
