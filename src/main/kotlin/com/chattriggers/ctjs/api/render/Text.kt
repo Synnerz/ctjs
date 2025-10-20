@@ -137,8 +137,8 @@ class Text {
 
     fun getHeight(): Float {
         return if (lines.size > 1)
-            lines.size.coerceAtMost(maxLines) * scale * 10
-        else scale * 10
+            lines.size.coerceAtMost(maxLines) * 10
+        else 10
     }
 
     fun exceedsMaxLines(): Boolean {
@@ -181,7 +181,7 @@ class Text {
             for (i in 0 until maxLines) {
                 if (i >= lines.size) break
                 Renderer.drawString(lines[i], xHolder, yHolder, color, shadow)
-                yHolder += scale * 10
+                yHolder += 10
             }
             Renderer.disableBlend()
             Renderer.popMatrix()
