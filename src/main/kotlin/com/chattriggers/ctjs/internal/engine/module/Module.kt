@@ -32,11 +32,9 @@ class Module(val name: String, var metadata: ModuleMetadata, val folder: File) {
         )
 
         return if (gui.collapsed) {
-            ctx.matrices.pushMatrix()
-            ctx.matrices.translate(x + width - 5f, y + 8f)
             ctx.matrices.rotate(Math.PI.toFloat())
-            ctx.drawText(Renderer.getFontRenderer(), "^", 0, 0, -1, false)
-            ctx.matrices.popMatrix()
+            ctx.drawText(Renderer.getFontRenderer(), "^", x + width - 5, y + 8, -1, false)
+            ctx.matrices.rotate(-Math.PI.toFloat())
             16
         } else {
             gui.description.setMaxWidth(width - 5)

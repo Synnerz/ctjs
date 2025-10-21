@@ -153,6 +153,7 @@ class Text {
 
     internal fun draw(ctx: DrawContext, x: Int? = null, y: Int? = null, backgroundX: Int? = null, backgroundWidth: Int? = null) =
         apply {
+            // FIXME: this crashes because mojang added a limit to the stack size of 16
             ctx.matrices.pushMatrix()
             ctx.matrices.scale(scale, scale)
 

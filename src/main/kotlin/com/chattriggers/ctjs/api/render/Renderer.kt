@@ -557,13 +557,14 @@ object Renderer {
     }
 
     @JvmStatic
+    @Deprecated("deprecated since 1.21.6")
     fun drawImage(image: Image, x: Float, y: Float, width: Float, height: Float) {
         if (colorized == null)
             colorize(1f, 1f, 1f, 1f)
 
         scale(1f, 1f, 50f)
 
-        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView, null)
+//        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView, null)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
         pos(x, y + height, 0f).tex(0f, 1f).color(colorized!!)

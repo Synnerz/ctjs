@@ -81,17 +81,18 @@ object LegacyPipelineBuilder {
     fun layer(): RenderLayer {
         if (layerList.containsKey(state())) return layerList[state()]!!
 
-        val layer = RenderLayer.of(
-            "ctjs/custom/layer${hashCode()}",
-            1536,
-            build(),
-            RenderLayer.MultiPhaseParameters
-                .builder()
-                .build(false)
-        )
-        layerList[state()] = layer
+        // FIXME: fix whenever the yarn mappings are fully done
+//        val layer = RenderLayer.of(
+//            "ctjs/custom/layer${hashCode()}",
+//            1536,
+//            build(),
+//            RenderLayer.MultiPhaseParameters
+//                .builder()
+//                .build(false)
+//        )
+//        layerList[state()] = layer
 
-        return layer
+        throw Error("LegacyPipelineBuilder#layer currently not supported")
     }
 
     fun state(): String {
