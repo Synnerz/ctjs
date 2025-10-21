@@ -89,12 +89,13 @@ object ConsoleHostProcess : Initializer {
             .directory(File("."))
             .command(
                 Path(System.getProperty("java.home"), "bin", "java").toString(),
-                "-cp",
-                urls,
                 ConsoleClientProcess::class.qualifiedName,
                 PORT.toString(),
                 ProcessHandle.current().pid().toString(),
             )
+            .apply {
+                environment()["CLASSPATH"] = urls
+            }
             .start()
 
         while (running) {
