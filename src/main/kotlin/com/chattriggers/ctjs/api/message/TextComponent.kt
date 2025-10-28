@@ -14,6 +14,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.ScriptRuntime
@@ -449,7 +450,7 @@ class TextComponent private constructor(
                 .withFont(
                     StyleSpriteSource.Font(
                         when (val font = obj["font"]) {
-                            null -> null
+                            null -> Identifier.ofVanilla("default")
                             is CharSequence -> font.toString().toIdentifier()
                             else -> error("Expected \"font\" key to be a String")
                         }
