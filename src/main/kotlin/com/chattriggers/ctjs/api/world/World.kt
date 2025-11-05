@@ -17,29 +17,29 @@ import com.chattriggers.ctjs.internal.mixins.ClientChunkMapAccessor
 import com.chattriggers.ctjs.internal.mixins.ClientWorldAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.chattriggers.ctjs.internal.utils.toIdentifier
-import net.minecraft.block.BlockState
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.world.ClientWorld
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.particle.BlockStateParticleEffect
-import net.minecraft.particle.DustColorTransitionParticleEffect
-import net.minecraft.particle.DustParticleEffect
-import net.minecraft.particle.ItemStackParticleEffect
-import net.minecraft.particle.ParticleEffect
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.particle.SculkChargeParticleEffect
-import net.minecraft.particle.ShriekParticleEffect
-import net.minecraft.particle.TintedParticleEffect
-import net.minecraft.particle.VibrationParticleEffect
-import net.minecraft.registry.Registries
-import net.minecraft.world.LightType
-import net.minecraft.world.event.BlockPositionSource
+import net.minecraft.client.Minecraft
+import net.minecraft.client.multiplayer.ClientLevel
+import net.minecraft.core.particles.BlockParticleOption
+import net.minecraft.core.particles.ColorParticleOption
+import net.minecraft.core.particles.DustColorTransitionOptions
+import net.minecraft.core.particles.DustParticleOptions
+import net.minecraft.core.particles.ItemParticleOption
+import net.minecraft.core.particles.ParticleType
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.core.particles.SculkChargeParticleOptions
+import net.minecraft.core.particles.ShriekParticleOption
+import net.minecraft.core.particles.VibrationParticleOption
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.LightLayer
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.gameevent.BlockPositionSource
 import kotlin.math.roundToInt
 
 object World {
     @JvmStatic
-    fun toMC() = MinecraftClient.getInstance().world
+    fun toMC() = Minecraft.getInstance().level
 
     @JvmField
     val spawn = SpawnWrapper()
@@ -57,7 +57,7 @@ object World {
      */
     @Deprecated("Use toMC", ReplaceWith("toMC()"))
     @JvmStatic
-    fun getWorld(): ClientWorld? = toMC()
+    fun getWorld(): ClientLevel? = toMC()
 
     @JvmStatic
     fun isLoaded(): Boolean = toMC() != null
@@ -66,10 +66,10 @@ object World {
     fun isRaining(): Boolean = toMC()?.isRaining ?: false
 
     @JvmStatic
-    fun getRainingStrength(): Float = toMC()?.getRainGradient(Renderer.partialTicks) ?: -1f
+    fun getRainingStrength(): Float = toMC()?.getRainLevel(Renderer.partialTicks) ?: -1f
 
     @JvmStatic
-    fun getTime(): Long = toMC()?.levelProperties?.time ?: -1L
+    fun getTime(): Long = toMC()?.dayTime ?: -1L
 
     @JvmStatic
     fun getDifficulty(): Settings.Difficulty? = toMC()?.difficulty?.let(Settings.Difficulty::fromMC)
@@ -130,7 +130,8 @@ object World {
      */
     @JvmStatic
     fun getSkyLightLevel(pos: BlockPos): Int {
-        return toMC()?.getLightLevel(LightType.SKY, pos.toMC()) ?: 0
+        // TODO: i don't think this is right
+        return toMC()?.getMaxLocalRawBrightness(pos.toMC(), LightLayer.SKY.ordinal) ?: 0
     }
 
     /**
@@ -152,7 +153,7 @@ object World {
      */
     @JvmStatic
     fun getBlockLightLevel(pos: BlockPos): Int {
-        return toMC()?.getLightLevel(LightType.BLOCK, pos.toMC()) ?: 0
+        return toMC()?.getMaxLocalRawBrightness(pos.toMC()) ?: 0
     }
 
     /**
@@ -161,7 +162,7 @@ object World {
      * @return the players
      */
     @JvmStatic
-    fun getAllPlayers(): List<PlayerMP> = toMC()?.players?.map(::PlayerMP) ?: listOf()
+    fun getAllPlayers(): List<PlayerMP> = toMC()?.players()?.map(::PlayerMP) ?: listOf()
 
     /**
      * Gets a player by their username, must be in the currently loaded chunks!
@@ -176,10 +177,10 @@ object World {
     fun hasPlayer(name: String) = getPlayerByName(name) != null
 
     @JvmStatic
-    fun getChunk(x: Int, y: Int, z: Int) = Chunk(toMC()!!.getWorldChunk(MCBlockPos(x, y, z)))
+    fun getChunk(x: Int, y: Int, z: Int) = Chunk(toMC()!!.getChunkAt(MCBlockPos(x, y, z)))
 
     @JvmStatic
-    fun getAllEntities() = toMC()?.entities?.map(Entity::fromMC) ?: listOf()
+    fun getAllEntities() = toMC()?.asMixin<ClientWorldAccessor>()?.loadedEntityStorage()?.entityGetter?.all?.map(Entity::fromMC) ?: listOf()
 
     /**
      * Gets every entity loaded in the world of a certain class
@@ -196,11 +197,10 @@ object World {
 
     @JvmStatic
     fun getAllBlockEntities(): List<BlockEntity> {
-        val chunks = toMC()
-            ?.asMixin<ClientWorldAccessor>()
-            ?.chunkManager?.asMixin<ClientChunkManagerAccessor>()
-            ?.chunks?.asMixin<ClientChunkMapAccessor>()
-            ?.chunks ?: return emptyList()
+        val chunks = toMC()!!
+            .chunkSource.asMixin<ClientChunkManagerAccessor>()
+            .storage.asMixin<ClientChunkMapAccessor>()
+            .chunks ?: return emptyList()
 
         val blockEntities = mutableListOf<BlockEntity>()
 
@@ -226,7 +226,7 @@ object World {
      */
     @JvmStatic
     fun getTicksPerSecond(): Int {
-        val mpt = toMC()?.tickManager?.millisPerTick ?: return 20
+        val mpt = toMC()?.tickRateManager()?.millisecondsPerTick() ?: return 20
         return (1000.0 / mpt).roundToInt()
     }
 
@@ -260,14 +260,14 @@ object World {
          *
          * @return the border target size
          */
-        fun getTargetSize(): Double = toMC()!!.worldBorder.sizeLerpTarget
+        fun getTargetSize(): Double = toMC()!!.worldBorder.lerpTarget
 
         /**
          * Gets the border time until the target size is met.
          *
          * @return the border time until target
          */
-        fun getTimeUntilTarget(): Long = toMC()!!.worldBorder.sizeLerpTime
+        fun getTimeUntilTarget(): Long = toMC()!!.worldBorder.lerpTime
     }
 
     /**
@@ -279,21 +279,21 @@ object World {
          *
          * @return the spawn x location.
          */
-        fun getX(): Int = toMC()!!.spawnPoint.pos.x
+        fun getX(): Int = toMC()!!.respawnData.pos().x
 
         /**
          * Gets the spawn y location.
          *
          * @return the spawn y location.
          */
-        fun getY(): Int = toMC()!!.spawnPoint.pos.y
+        fun getY(): Int = toMC()!!.respawnData.pos().y
 
         /**
          * Gets the spawn z location.
          *
          * @return the spawn z location.
          */
-        fun getZ(): Int = toMC()!!.spawnPoint.pos.z
+        fun getZ(): Int = toMC()!!.respawnData.pos().z
     }
 
     class ParticleWrapper {
@@ -303,7 +303,7 @@ object World {
          *
          * @return the array of name strings
          */
-        fun getParticleNames(): List<String> = Registries.PARTICLE_TYPE.keys.map { it.value.path }.toList()
+        fun getParticleNames(): List<String> = BuiltInRegistries.PARTICLE_TYPE.keySet().map { it.path }.toList()
 
         /**
          * Spawns a particle into the world with the given attributes,
@@ -327,30 +327,31 @@ object World {
             ySpeed: Double,
             zSpeed: Double,
         ): Particle? {
-            val particleType = Registries.PARTICLE_TYPE.get(particle.toIdentifier())
+            val particleType = BuiltInRegistries.PARTICLE_TYPE.get(particle.toIdentifier()).get().value()
 
             requireNotNull(particleType) {
                 "Invalid particle parameter"
             }
 
-            val effect = if (particleType is ParticleEffect) {
+            // TODO: does this work?
+            val effect = if (particleType is ParticleType<*>) {
                 particleType
             } else {
                 val blockPos = BlockPos(x, y, z)
                 val blockState = getBlockStateAt(blockPos)
 
                 when (particleType) {
-                    ParticleTypes.BLOCK -> BlockStateParticleEffect(ParticleTypes.BLOCK, blockState)
-                    ParticleTypes.BLOCK_MARKER -> BlockStateParticleEffect(ParticleTypes.BLOCK_MARKER, blockState)
-                    ParticleTypes.DUST -> DustParticleEffect.DEFAULT
-                    ParticleTypes.DUST_COLOR_TRANSITION -> DustColorTransitionParticleEffect.DEFAULT
-                    ParticleTypes.DUST_PILLAR -> BlockStateParticleEffect(ParticleTypes.DUST_PILLAR, blockState)
-                    ParticleTypes.ENTITY_EFFECT -> TintedParticleEffect.create(ParticleTypes.ENTITY_EFFECT, 1f, 0f, 0f)
-                    ParticleTypes.FALLING_DUST -> BlockStateParticleEffect(ParticleTypes.FALLING_DUST, blockState)
-                    ParticleTypes.ITEM -> ItemStackParticleEffect(ParticleTypes.ITEM, ItemStack(Items.STONE, 1))
-                    ParticleTypes.SCULK_CHARGE -> SculkChargeParticleEffect(0f)
-                    ParticleTypes.SHRIEK -> ShriekParticleEffect(0)
-                    ParticleTypes.VIBRATION -> VibrationParticleEffect(BlockPositionSource(blockPos.toMC()), 0)
+                    ParticleTypes.BLOCK -> BlockParticleOption(ParticleTypes.BLOCK, blockState)
+                    ParticleTypes.BLOCK_MARKER -> BlockParticleOption(ParticleTypes.BLOCK_MARKER, blockState)
+                    ParticleTypes.DUST -> DustParticleOptions.REDSTONE
+                    ParticleTypes.DUST_COLOR_TRANSITION -> DustColorTransitionOptions.SCULK_PARTICLE_COLOR
+                    ParticleTypes.DUST_PILLAR -> BlockParticleOption(ParticleTypes.DUST_PILLAR, blockState)
+                    ParticleTypes.ENTITY_EFFECT -> ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 1f, 0f, 0f)
+                    ParticleTypes.FALLING_DUST -> BlockParticleOption(ParticleTypes.FALLING_DUST, blockState)
+                    ParticleTypes.ITEM -> ItemParticleOption(ParticleTypes.ITEM, ItemStack(Items.STONE, 1))
+                    ParticleTypes.SCULK_CHARGE -> SculkChargeParticleOptions(0f)
+                    ParticleTypes.SHRIEK -> ShriekParticleOption(0)
+                    ParticleTypes.VIBRATION -> VibrationParticleOption(BlockPositionSource(blockPos.toMC()), 0)
 
                     else -> throw IllegalStateException("Particle not accounted for: $particle")
                 }
