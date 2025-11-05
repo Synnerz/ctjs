@@ -1,12 +1,16 @@
 package com.chattriggers.ctjs.internal.mixins;
 
-import net.minecraft.client.world.ClientChunkManager;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.entity.TransientEntitySectionManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ClientWorld.class)
+@Mixin(ClientLevel.class)
 public interface ClientWorldAccessor {
     @Accessor
     ClientChunkManager getChunkManager();
+
+    @Accessor(value = "entityStorage")
+    TransientEntitySectionManager<Entity> loadedEntityStorage();
 }
