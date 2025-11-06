@@ -117,7 +117,7 @@ class CTJS : ClientModInitializer {
 
         @JvmStatic
         fun load(asCommand: Boolean = true) {
-            Client.getMinecraft().options.write()
+            Client.getMinecraft().options.save()
             unload(asCommand = false)
 
             if (asCommand)
