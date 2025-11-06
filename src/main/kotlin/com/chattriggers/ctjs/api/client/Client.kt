@@ -9,7 +9,9 @@ import com.chattriggers.ctjs.internal.mixins.HandledScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.KeyBindingAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import gg.essential.universal.UKeyboard
+import net.minecraft.client.Minecraft
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.components.PlayerTabOverlay
 import net.minecraft.client.gui.hud.ChatHud
 import net.minecraft.client.gui.hud.PlayerListHud
 import net.minecraft.client.gui.screen.ChatScreen
@@ -18,6 +20,8 @@ import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
+import net.minecraft.client.gui.screens.ChatScreen
+import net.minecraft.client.multiplayer.ClientPacketListener
 import net.minecraft.client.network.ClientPlayNetworkHandler
 import net.minecraft.client.network.ServerAddress
 import net.minecraft.client.network.ServerInfo
@@ -46,7 +50,7 @@ object Client {
      * @return The Minecraft object
      */
     @JvmStatic
-    fun getMinecraft(): MinecraftClient = MinecraftClient.getInstance()
+    fun getMinecraft(): Minecraft = Minecraft.getInstance()
 
     /**
      * Gets Minecraft's NetHandlerPlayClient object
@@ -54,7 +58,7 @@ object Client {
      * @return The NetHandlerPlayClient object
      */
     @JvmStatic
-    fun getConnection(): ClientPlayNetworkHandler? = getMinecraft().networkHandler
+    fun getConnection(): ClientPacketListener? = getMinecraft().connection
 
     /**
      * Schedule's a task to run on Minecraft's main thread in [delay] ticks.
@@ -118,10 +122,10 @@ object Client {
     fun isInChat(): Boolean = getMinecraft().currentScreen is ChatScreen
 
     @JvmStatic
-    fun getTabGui(): PlayerListHud? = getMinecraft().inGameHud?.playerListHud
+    fun getTabGui(): PlayerTabOverlay? = getMinecraft().inGameHud?.playerListHud
 
     @JvmStatic
-    fun isInTab(): Boolean = getMinecraft().options.playerListKey.isPressed
+    fun isInTab(): Boolean = getMinecraft().options.keyPlayerList.isDown
 
     /**
      * Gets whether the Minecraft window is active

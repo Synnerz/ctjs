@@ -11,6 +11,7 @@ import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.item.ItemStack
+import net.minecraft.network.chat.Component
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket
 import net.minecraft.text.*
 import net.minecraft.util.Formatting
@@ -45,7 +46,7 @@ class TextComponent private constructor(
     private val parts: MutableList<Part>,
     private val chatLineId: Int = -1,
     private val isRecursive: Boolean = false,
-) : Text, Iterable<NativeObject> {
+) : Component, Iterable<NativeObject> {
     /**
      * Creates an empty [TextComponent] with a single, unstyled, empty part.
      */
