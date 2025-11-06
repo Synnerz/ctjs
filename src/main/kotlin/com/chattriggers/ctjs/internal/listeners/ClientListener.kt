@@ -26,6 +26,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.event.player.*
+import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import org.lwjgl.glfw.GLFW
 import org.mozilla.javascript.Context
@@ -223,7 +224,7 @@ object ClientListener : Initializer {
         }
     }
 
-    private fun handleChatMessage(message: Text, actionBar: Boolean): Boolean {
+    private fun handleChatMessage(message: Component, actionBar: Boolean): Boolean {
         val textComponent = TextComponent(message)
         val event = ChatTrigger.Event(textComponent)
 
