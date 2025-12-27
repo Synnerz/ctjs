@@ -48,11 +48,13 @@ class KeyBind {
         } else {
             val categoryList = KeyBindingAccessor.Category.getCategoryList()
 
-            if (!categoryList.stream().anyMatch { it.id.path.equals(category) }) {
-                uniqueCategories[category] = 0
-            }
-            val keyCategory = KeyBinding.Category.create(Identifier.of(category))
-            uniqueCategories[category] = uniqueCategories[category]!! + 1
+            val keyCategory = findExistingCategory(categoryList, category)
+                ?: createCategory(category).also { newCategory ->
+                    categoryList.add(newCategory)
+                }
+
+            uniqueCategories[category] = (uniqueCategories[category] ?: 0) + 1
+
             keyBinding = KeyBinding(description, keyCode, keyCategory)
 
             // We need to update the bound key for the KeyBind we just made to the previous binding,
@@ -181,6 +183,8 @@ class KeyBind {
         private val uniqueCategories = mutableMapOf<String, Int>()
         private val keyBinds = CopyOnWriteArrayList<KeyBind>()
 
+        private val categoryCache = mutableMapOf<String, KeyBinding.Category>()
+
         internal fun getKeyBinds() = keyBinds
 
         override fun init() {
@@ -206,6 +210,31 @@ class KeyBind {
             return category.id.path
         }
 
+        private fun findExistingCategory(
+            categoryList: List<KeyBinding.Category>,
+            categoryName: String
+        ): KeyBinding.Category? {
+            categoryCache[categoryName]?.let { cached ->
+                if (categoryList.any { it.id == cached.id }) {
+                    return cached
+                }
+            }
+
+            return categoryList.find {
+                it.id.path.equals(categoryName, ignoreCase = true) ||
+                        it.id.toString().equals(categoryName, ignoreCase = true)
+            }?.also {
+                categoryCache[categoryName] = it
+            }
+        }
+
+        private fun createCategory(categoryName: String): KeyBinding.Category {
+            val identifier = Identifier.of("chattriggers", categoryName.lowercase().replace(" ", "_"))
+            val category = KeyBinding.Category.create(identifier)
+            categoryCache[categoryName] = category
+            return category
+        }
+
         private fun removeKeyBinding(keyBinding: KeyBinding) {
             Client.getMinecraft().options.asMixin<GameOptionsAccessor>().setAllKeys(
                 ArrayUtils.removeElement(
@@ -222,6 +251,7 @@ class KeyBind {
                 if (uniqueCategories[categoryName] == 0) {
                     uniqueCategories.remove(categoryName)
                     KeyBindingAccessor.Category.getCategoryList().removeIf { it.id.equals(category.id) }
+                    categoryCache.remove(categoryName)
                 }
             }
         }
@@ -243,7 +273,10 @@ class KeyBind {
                 )
             )
 
-            KeyBindingAccessor.Category.getCategoryList().add(keyBinding.category)
+            val categoryList = KeyBindingAccessor.Category.getCategoryList()
+            if (!categoryList.any { it.id == keyBinding.category.id }) {
+                categoryList.add(keyBinding.category)
+            }
 
             return keyBinding
         }
