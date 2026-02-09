@@ -10,13 +10,6 @@ import gg.essential.elementa.state.BasicState
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.numbers.NumberFormat
 import net.minecraft.network.chat.numbers.StyledFormat
-import net.minecraft.scoreboard.ScoreAccess
-import net.minecraft.scoreboard.ScoreboardDisplaySlot
-import net.minecraft.scoreboard.ScoreboardObjective
-import net.minecraft.scoreboard.ScoreboardScore
-import net.minecraft.scoreboard.number.NumberFormat
-import net.minecraft.scoreboard.number.StyledNumberFormat
-import net.minecraft.text.Style
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.Objective
 import net.minecraft.world.scores.ScoreAccess
@@ -241,12 +234,12 @@ object Scoreboard {
     class Score(override val mcValue: ScoreAccess) : CTWrapper<ScoreAccess> {
         private val scoreState = BasicState(mcValue.get())
         private val nameState = BasicState(mcValue.display())
-        private val formatState = BasicState(mcValue.asMixin<`Scoreboard$1Accessor`>().score.numberFormat)
+        private val formatState = BasicState(mcValue.asMixin<`Scoreboard$1Accessor`>().score.numberFormat())
         private val teamState = run {
             val scoreboard = Scoreboard.toMC()!!
-            val name = mcValue.asMixin<`Scoreboard$1Accessor`>().holder.nameForScoreboard
+            val name = mcValue.asMixin<`Scoreboard$1Accessor`>().holder.scoreboardName
 
-            BasicState(scoreboard.getScoreHolderTeam(name))
+            BasicState(scoreboard.getPlayersTeam(name))
         }
 
         /**
@@ -264,12 +257,12 @@ object Scoreboard {
          */
         fun setTeam(team: Team?) = apply {
             val scoreboard = Scoreboard.toMC()!!
-            val name = mcValue.asMixin<`Scoreboard$1Accessor`>().holder.nameForScoreboard
+            val name = mcValue.asMixin<`Scoreboard$1Accessor`>().holder.scoreboardName
 
             if (team == null) {
-                scoreboard.clearTeam(name)
+                scoreboard.removePlayerFromTeam(name)
             } else {
-                scoreboard.addScoreHolderToTeam(name, team.toMC())
+                scoreboard.addPlayerToTeam(name, team.toMC())
             }
 
             teamState.set(team?.toMC())
@@ -300,7 +293,7 @@ object Scoreboard {
          * @return the display name
          */
         fun getName(): TextComponent {
-            val name = mcValue.asMixin<`Scoreboard$1Accessor`>().holder.nameForScoreboard
+            val name = mcValue.asMixin<`Scoreboard$1Accessor`>().holder.scoreboardName
 
             return TextComponent(
                 MCTeam.formatNameForTeam(
@@ -357,7 +350,7 @@ object Scoreboard {
             val scoreboard = Scoreboard.toMC() ?: return
             val sidebarObjective = getSidebar() ?: return
 
-            scoreboard.removeScore(toMC().asMixin<`Scoreboard$1Accessor`>().holder, sidebarObjective)
+            scoreboard.resetSinglePlayerScore(toMC().asMixin<`Scoreboard$1Accessor`>().holder, sidebarObjective)
             updateNames()
         }
 
