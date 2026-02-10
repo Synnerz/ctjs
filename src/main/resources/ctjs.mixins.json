@@ -22,7 +22,7 @@
         "EntityRenderDispatcherMixin",
         "GameOptionsAccessor",
         "GameOptionsMixin",
-        "HandledScreenAccessor",
+        "AbstractContainerScreenAccessor",
         "HandledScreenMixin",
         "InGameHudMixin",
         "KeyBindingAccessor",
