@@ -283,7 +283,7 @@ class Gui @JvmOverloads constructor(
 
         this.mouseX = mouseX
         this.mouseY = mouseY
-        onDraw?.trigger(arrayOf(mouseX, mouseY, partialTicks))
+        onDraw?.trigger(arrayOf(drawContexts.last(), mouseX, mouseY, partialTicks))
 
         Renderer.popMatrix()
     }
