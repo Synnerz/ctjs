@@ -24,7 +24,7 @@ dokka = "1.9.20"
 
 # Plugin Versions
 kotlin = "2.1.20"
-loom = "1.12.0-alpha.37"
+loom = "1.13-SNAPSHOT"
 validator = "0.17.0"
 ksp = "2.1.20-1.0.32"
 
@@ -57,7 +57,7 @@ gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 [bundles]
 fabric = ["fabric-loader", "fabric-api", "fabric-kotlin"]
 included = ["mapping-io", "rhino", "jackson-core", "textarea", "serialization", "koffee"]
-essential = ["universalcraft", "elementa", "vigilance"]
+#essential = ["universalcraft", "elementa", "vigilance"]
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
