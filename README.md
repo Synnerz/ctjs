@@ -21,7 +21,7 @@ This project is a fork from the original mod, for the original github you can he
 </div>
 
 ### Note
-The [std](https://github.com/Synnerz/ctjs/tree/std) branch or is supposed to be a standalone version without much of the api in order to allow this mod to be kept sort of up to date with newer mc versions, this sadly will remove a lot of useful features the mod itself had.
+The [std](https://github.com/Synnerz/ctjs/tree/std) branch is supposed to be a standalone version without much of the api in order to allow this mod to be kept sort of up to date with newer mc versions, this sadly will remove a lot of useful features the mod itself had.
 
 ChatTriggers (CT) is a framework for Minecraft that enables live scripting and client modification using JavaScript. We provide libraries, wrappers, objects, and more to make your life as a modder as easy as possible. Even if we don't support something you need, you can still access any Java classes and native fields/methods.
 
