@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.internal.engine.module
 
-import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.Text

@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.api.world.block
 
-import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.inventory.Item
 import com.chattriggers.ctjs.api.world.World
 

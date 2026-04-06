@@ -1,7 +1,6 @@
 package com.chattriggers.ctjs.internal.listeners
 
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.entity.BlockEntity
 import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.api.entity.PlayerInteraction
 import com.chattriggers.ctjs.api.inventory.Item

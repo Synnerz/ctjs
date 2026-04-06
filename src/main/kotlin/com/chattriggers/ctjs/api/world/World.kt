@@ -3,8 +3,6 @@ package com.chattriggers.ctjs.api.world
 import com.chattriggers.ctjs.MCBlockPos
 import com.chattriggers.ctjs.MCParticle
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.client.Settings
-import com.chattriggers.ctjs.api.entity.BlockEntity
 import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.api.entity.Particle
 import com.chattriggers.ctjs.api.entity.PlayerMP

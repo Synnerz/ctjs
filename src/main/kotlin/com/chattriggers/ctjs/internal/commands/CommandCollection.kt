@@ -9,7 +9,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
-import net.minecraft.command.CommandSource
+import net.minecraft.commands.CommandSource
 
 abstract class CommandCollection : Initializer {
     private val allCommands = mutableSetOf<Command>()

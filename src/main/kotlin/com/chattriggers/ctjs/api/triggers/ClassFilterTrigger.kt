@@ -1,6 +1,5 @@
 package com.chattriggers.ctjs.api.triggers
 
-import com.chattriggers.ctjs.api.entity.BlockEntity
 import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.MCBlockEntity
 import com.chattriggers.ctjs.MCEntity

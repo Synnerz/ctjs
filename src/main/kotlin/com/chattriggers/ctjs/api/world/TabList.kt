@@ -3,7 +3,6 @@ package com.chattriggers.ctjs.api.world
 import com.chattriggers.ctjs.MCTeam
 import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.Team
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.internal.mixins.ClientPlayNetworkHandlerAccessor

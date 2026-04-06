@@ -2,8 +2,6 @@ package com.chattriggers.ctjs
 
 import com.chattriggers.ctjs.api.Config
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.client.KeyBind
-import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.client.Sound
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.api.message.ChatLib
@@ -19,11 +17,10 @@ import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.client.Minecraft
 import java.io.File
 import java.net.URI
 import java.net.URLConnection
-import java.security.MessageDigest
-import java.util.*
 import kotlin.concurrent.thread
 
 class CTJS : ClientModInitializer {
@@ -47,6 +44,7 @@ class CTJS : ClientModInitializer {
 
         val configLocation = File("./config")
         val assetsDir = File(configLocation, "ChatTriggers/assets/").apply { mkdirs() }
+        val minecraft by lazy { Minecraft.getInstance() }
 
         @JvmStatic
         var isLoaded = true
@@ -78,7 +76,6 @@ class CTJS : ClientModInitializer {
             isLoaded = false
 
             ModuleManager.teardown()
-            KeyBind.clearKeyBinds()
             Register.clearCustomTriggers()
             StaticCommand.unregisterAll()
             DynamicCommands.unregisterAll()

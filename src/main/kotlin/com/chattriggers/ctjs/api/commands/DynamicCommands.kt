@@ -1,6 +1,6 @@
 package com.chattriggers.ctjs.api.commands
 
-import com.chattriggers.ctjs.api.client.Player
+import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.commands.DynamicCommands.argument
 import com.chattriggers.ctjs.api.commands.DynamicCommands.buildCommand
 import com.chattriggers.ctjs.api.commands.DynamicCommands.custom
@@ -24,6 +24,7 @@ import com.chattriggers.ctjs.internal.mixins.commands.EntitySelectorAccessor
 import com.chattriggers.ctjs.MCEntity
 import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.api.client.Client
+import com.chattriggers.ctjs.api.entity.LivingEntity
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.mojang.brigadier.CommandDispatcher
@@ -35,21 +36,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.CommandNode
-import net.minecraft.block.pattern.CachedBlockPosition
-import net.minecraft.command.CommandSource
-import net.minecraft.command.EntitySelector
-import net.minecraft.command.argument.*
-import net.minecraft.command.argument.AngleArgumentType.Angle
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.registry.BuiltinRegistries
-import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.CommandOutput
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
-import net.minecraft.util.math.Box
-import net.minecraft.util.math.Vec2f
-import net.minecraft.util.math.Vec3d
+import net.minecraft.commands.CommandSource
+import net.minecraft.commands.arguments.AngleArgument
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.WrappedException
@@ -237,7 +225,7 @@ object DynamicCommands : CommandCollection() {
      * to, for example, redirect to just `/advancement` instead of `/`.
      */
     @JvmStatic
-    fun getDispatcherRoot() = Client.getConnection()?.commandDispatcher?.root
+    fun getDispatcherRoot() = Client.getConnection()?.commands?.root
 
     /////////////////////////
     // Brigadier Arg Types //
@@ -307,7 +295,7 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:angle">minecraft:angle</a>
      */
     @JvmStatic
-    fun angle() = wrapArgument(AngleArgumentType.angle(), ::AngleArgumentWrapper)
+    fun angle() = wrapArgument(AngleArgument.angle(), ::AngleArgumentWrapper)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_pos">minecraft:block_pos</a>
@@ -705,9 +693,9 @@ object DynamicCommands : CommandCollection() {
         }
     }
 
-    data class AngleArgumentWrapper(val angle: Angle) {
+    data class AngleArgumentWrapper(val angle: AngleArgument.SingleAngle) {
         @JvmOverloads
-        fun getAngle(entity: Entity = Player.asPlayerMP()!!) = angle.getAngle(
+        fun getAngle(entity: LivingEntity = (CTJS.minecraft.player!! as LivingEntity)) = angle.getAngle(
             getMockCommandSource().withRotation(entity.getRotation())
         )
     }

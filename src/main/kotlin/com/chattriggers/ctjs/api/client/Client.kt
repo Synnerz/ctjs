@@ -1,12 +1,11 @@
 package com.chattriggers.ctjs.api.client
 
+import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.inventory.Slot
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.internal.listeners.ClientListener
-import com.chattriggers.ctjs.internal.mixins.ChatScreenAccessor
 import com.chattriggers.ctjs.internal.mixins.AbstractContainerScreenAccessor
-import com.chattriggers.ctjs.internal.mixins.KeyBindingAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.mojang.realmsclient.RealmsMainScreen
 import gg.essential.universal.UKeyboard
@@ -35,9 +34,6 @@ object Client {
 
     @JvmField
     val camera = CameraWrapper()
-
-    @JvmField
-    val settings = Settings
 
     /**
      * Gets Minecraft's Minecraft object
@@ -170,32 +166,6 @@ object Client {
     @JvmStatic
     fun isInGui(): Boolean = currentGui.get() != null
 
-    /**
-     * Gets the chat message currently typed into the chat gui.
-     *
-     * @return A blank string if the gui isn't open, otherwise, the message
-     */
-    @JvmStatic
-    fun getCurrentChatMessage(): String {
-        return if (isInChat()) {
-            val chatGui = getMinecraft().screen as ChatScreen
-            chatGui.asMixin<ChatScreenAccessor>().input.value
-        } else ""
-    }
-
-    /**
-     * Sets the current chat message, if the chat gui is not open, one will be opened.
-     *
-     * @param message the message to put in the chat text box.
-     */
-    @JvmStatic
-    fun setCurrentChatMessage(message: String) {
-        if (isInChat()) {
-            val chatGui = getMinecraft().screen as ChatScreen
-            chatGui.asMixin<ChatScreenAccessor>().input.value = message
-        } else currentGui.set(ChatScreen(message, false))
-    }
-
     @JvmStatic
     fun sendPacket(packet: Packet<*>) {
         getConnection()?.connection?.send(packet)
@@ -238,52 +208,6 @@ object Client {
     @JvmStatic
     fun paste(): String = getMinecraft().keyboardHandler.clipboard
 
-    /**
-     * Get the [KeyBinding] from an already existing Minecraft KeyBinding, otherwise, returns null.
-     *
-     * @param keyCode the keycode to search for, see Keyboard below. Ex. Keyboard.KEY_A
-     * @return the [KeyBinding] from a Minecraft KeyBinding, or null if one doesn't exist
-     * @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-     */
-    @JvmStatic
-    fun getKeyBindFromKey(keyCode: Int): KeyBind? {
-        return KeyBind.getKeyBinds().find { it.getKeyCode() == keyCode }
-            ?: getMinecraft().options.keyMappings
-                .find { it.asMixin<KeyBindingAccessor>().key.value == keyCode }
-                ?.let(::KeyBind)
-    }
-
-    /**
-     * Get the [KeyBinding] from an already existing Minecraft KeyBinding, else, return a new one.
-     *
-     * @param keyCode the keycode which the keybind will respond to, see Keyboard below. Ex. Keyboard.KEY_A
-     * @param description the description of the keybind
-     * @param category the keybind category the keybind will be in
-     * @return the [KeyBinding] from a Minecraft KeyBinding, or a new one if one doesn't exist
-     * @see [org.lwjgl.input.Keyboard](http://legacy.lwjgl.org/javadoc/org/lwjgl/input/Keyboard.html)
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun getKeyBindFromKey(keyCode: Int, description: String, category: String = "ChatTriggers"): KeyBind {
-        return getKeyBindFromKey(keyCode) ?: KeyBind(description, keyCode, category)
-    }
-
-    /**
-     * Get the [KeyBinding] from an already existing
-     * Minecraft KeyBinding, otherwise, returns null.
-     *
-     * @param description the description of the keybind
-     * @return the [KeyBinding], or null if one doesn't exist
-     */
-    @JvmStatic
-    fun getKeyBindFromDescription(description: String): KeyBind? {
-        return KeyBind.getKeyBinds()
-            .find { it.getDescription() == description }
-            ?: getMinecraft().options.keyMappings
-                .find { it.translatedKeyMessage.string == description }
-                ?.let(::KeyBind)
-    }
-
     class CurrentGuiWrapper {
         /**
          * Gets the Java class name of the currently open gui, for example, "GuiChest"
@@ -311,6 +235,7 @@ object Client {
          * @return the [Slot] under the mouse
          */
         fun getSlotUnderMouse(): Slot? {
+            // TODO: fixme
             val screen: Screen? = get()
             return if (screen is AbstractContainerScreen<*>) {
                 screen.asMixin<AbstractContainerScreenAccessor>().invokeGetHoveredSlot(getMouseX(), getMouseY())?.let(::Slot)
@@ -321,7 +246,7 @@ object Client {
          * Closes the currently open gui
          */
         fun close() {
-            scheduleTask { Player.toMC()?.closeContainer() }
+            scheduleTask { CTJS.minecraft.player?.closeContainer() }
         }
     }
 

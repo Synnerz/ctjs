@@ -1,7 +1,6 @@
 package com.chattriggers.ctjs.internal.utils
 
 import com.chattriggers.ctjs.api.client.CPS
-import com.chattriggers.ctjs.api.client.KeyBind
 import com.chattriggers.ctjs.api.commands.DynamicCommands
 import com.chattriggers.ctjs.internal.commands.CTCommand
 import com.chattriggers.ctjs.internal.commands.StaticCommand

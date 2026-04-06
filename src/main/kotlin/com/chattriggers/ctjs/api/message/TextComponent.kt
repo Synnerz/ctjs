@@ -2,7 +2,6 @@ package com.chattriggers.ctjs.api.message
 
 import com.chattriggers.ctjs.MCEntity
 import com.chattriggers.ctjs.api.client.Client
-import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.Entity
 import com.chattriggers.ctjs.api.inventory.Item
 import com.chattriggers.ctjs.api.inventory.ItemType
