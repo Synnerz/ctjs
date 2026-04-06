@@ -31,29 +31,12 @@ class CTJS : ClientModInitializer {
         Client.referenceSystemTime = System.nanoTime()
         Initializer.initializers.forEach(Initializer::init)
 
-        thread {
-            reportHashedUUID()
-        }
-
         Config.loadData()
 
         Runtime.getRuntime().addShutdownHook(Thread {
             TriggerType.GAME_UNLOAD.triggerAll()
             Console.close()
         })
-    }
-
-    private fun reportHashedUUID() {
-        val uuid = Player.getUUID().toString().encodeToByteArray()
-        val salt = (System.getProperty("user.name") ?: "").encodeToByteArray()
-        val md = MessageDigest.getInstance("SHA-256")
-        md.update(salt)
-        val hashedUUID = md.digest(uuid)
-        val hash = Base64.getUrlEncoder().encodeToString(hashedUUID)
-
-        val url = "$WEBSITE_ROOT/api/statistics/track?hash=$hash&version=$MOD_VERSION"
-        val connection = makeWebRequest(url)
-        connection.getInputStream()
     }
 
     companion object {
