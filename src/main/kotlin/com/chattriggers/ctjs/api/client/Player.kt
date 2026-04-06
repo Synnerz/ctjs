@@ -13,12 +13,7 @@ import com.chattriggers.ctjs.api.world.World
 import com.chattriggers.ctjs.api.world.block.BlockFace
 import com.chattriggers.ctjs.api.world.block.BlockPos
 import gg.essential.universal.UMath
-import net.minecraft.client.gui.screen.ingame.HandledScreen
-import net.minecraft.util.Hand
-import net.minecraft.util.hit.BlockHitResult
-import net.minecraft.util.hit.EntityHitResult
-import net.minecraft.util.hit.HitResult
-import net.minecraft.util.math.Vec2f
+import net.minecraft.world.phys.Vec2
 import org.mozilla.javascript.NativeObject
 import java.util.*
 
@@ -39,7 +34,7 @@ object Player {
     fun getPlayer() = toMC()
 
     @JvmStatic
-    fun getTeam(): Team? = Scoreboard.toMC()?.getTeam(getName())?.let(::Team)
+    fun getTeam(): Team? = Scoreboard.toMC()?.getPlayerTeam(getName())?.let(::Team)
 
     @JvmStatic
     fun asPlayerMP(): PlayerMP? = toMC()?.let(::PlayerMP)
@@ -57,7 +52,7 @@ object Player {
     fun getPos(): BlockPos = BlockPos(getX(), getY(), getZ())
 
     @JvmStatic
-    fun getRotation() = toMC()?.rotationClient ?: Vec2f(0f, 0f)
+    fun getRotation() = toMC()?.rotationVector ?: Vec2(0f, 0f)
 
     @JvmStatic
     fun getLastX(): Double = toMC()?.lastRenderX ?: 0.0

@@ -9,9 +9,10 @@ import com.chattriggers.ctjs.internal.utils.asMixin
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.world.entity.player.Player
 import org.mozilla.javascript.NativeObject
 
-class PlayerMP(override val mcValue: PlayerEntity) : LivingEntity(mcValue) {
+class PlayerMP(override val mcValue: Player) : LivingEntity(mcValue) {
     fun isSpectator() = mcValue.isSpectator
 
     fun getPing(): Int {

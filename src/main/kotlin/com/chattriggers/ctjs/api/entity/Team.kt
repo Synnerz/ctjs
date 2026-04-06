@@ -4,8 +4,6 @@ import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.MCTeam
 import com.chattriggers.ctjs.api.message.ChatLib
-import net.minecraft.scoreboard.AbstractTeam
-import net.minecraft.util.Formatting
 
 class Team(override val mcValue: MCTeam) : CTWrapper<MCTeam> {
     /**
