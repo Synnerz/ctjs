@@ -46,8 +46,6 @@ dependencies {
         include(this)
     }
 
-//    modApi(libs.modmenu)
-//    modRuntimeOnly(libs.devauth)
     dokkaPlugin(libs.versioning)
 
     implementation(kotlin("stdlib-jdk8"))
