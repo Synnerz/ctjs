@@ -1,10 +1,10 @@
 [versions]
 # Library versions
-minecraft = "1.21.10"
-yarn = "1.21.10+build.1"
+minecraft = "1.21.11"
+yarn = "1.21.11+build.5"
 
-loader = "0.17.2"
-fabric-api = "0.134.1+1.21.10"
+loader = "0.17.3"
+fabric-api = "0.141.3+1.21.11"
 fabric-kotlin = "1.13.2+kotlin.2.1.20"
 
 mapping-io = "0.6.1"
@@ -57,7 +57,7 @@ gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 [bundles]
 fabric = ["fabric-loader", "fabric-api", "fabric-kotlin"]
 included = ["mapping-io", "rhino", "jackson-core", "textarea", "serialization", "koffee"]
-#essential = ["universalcraft", "elementa", "vigilance"]
+essential = ["universalcraft", "elementa", "vigilance"]
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

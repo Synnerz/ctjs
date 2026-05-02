@@ -41,16 +41,13 @@ dependencies {
     modImplementation(libs.bundles.fabric)
 
     modImplementation(libs.bundles.included) { include(this) }
-//    modImplementation(libs.bundles.essential) {
-//        exclude("gg.essential", "universalcraft-1.18.1-fabric")
-//        include(this)
-//    }
-    implementation(include("gg.essential:vigilance:312")!!)
-    implementation(include("gg.essential:elementa:714")!!)
-    modImplementation(include("gg.essential:universalcraft-1.21.9-fabric:451")!!)
+    modImplementation(libs.bundles.essential) {
+        exclude("gg.essential", "universalcraft-1.18.1-fabric")
+        include(this)
+    }
 
 //    modApi(libs.modmenu)
-    modRuntimeOnly(libs.devauth)
+//    modRuntimeOnly(libs.devauth)
     dokkaPlugin(libs.versioning)
 
     implementation(kotlin("stdlib-jdk8"))

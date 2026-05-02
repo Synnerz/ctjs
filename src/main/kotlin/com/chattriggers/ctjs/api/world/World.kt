@@ -75,7 +75,7 @@ object World {
     fun getDifficulty(): Settings.Difficulty? = toMC()?.difficulty?.let(Settings.Difficulty::fromMC)
 
     @JvmStatic
-    fun getMoonPhase(): Int = toMC()?.moonPhase ?: -1
+    fun getMoonPhase(): Int = -1// toMC()?.moonPhase ?: -1
 
     /**
      * Gets the [Block] at a location in the world.

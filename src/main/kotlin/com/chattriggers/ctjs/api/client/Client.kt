@@ -327,10 +327,10 @@ object Client {
     }
 
     class CameraWrapper {
-        fun getX(): Double = getMinecraft().gameRenderer.camera.pos.x
+        fun getX(): Double = getMinecraft().gameRenderer.camera.cameraPos.x
 
-        fun getY(): Double = getMinecraft().gameRenderer.camera.pos.y
+        fun getY(): Double = getMinecraft().gameRenderer.camera.cameraPos.y
 
-        fun getZ(): Double = getMinecraft().gameRenderer.camera.pos.z
+        fun getZ(): Double = getMinecraft().gameRenderer.camera.cameraPos.z
     }
 }

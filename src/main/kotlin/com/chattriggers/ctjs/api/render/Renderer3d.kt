@@ -62,7 +62,7 @@ object Renderer3d {
             begin()
         if (!firstVertex)
             worldRenderer.endVertex()
-        val camera = Client.getMinecraft().gameRenderer.camera.pos
+        val camera = Client.getMinecraft().gameRenderer.camera.cameraPos
         worldRenderer.pos(Renderer.matrixStack, x.toDouble() - camera.x, y.toDouble() - camera.y, z.toDouble() - camera.z)
         firstVertex = false
     }
@@ -166,7 +166,7 @@ object Renderer3d {
      */
     @JvmStatic
     fun lineWidth(width: Float) = apply {
-        RenderSystem.lineWidth(width)
+//        RenderSystem.lineWidth(width)
     }
 
     /**
@@ -221,9 +221,9 @@ object Renderer3d {
         val fontRenderer = Renderer.getFontRenderer()
         val camera = Client.getMinecraft().gameRenderer.camera
         val renderPos = Vec3f(
-            x - camera.pos.x.toFloat(),
-            y - camera.pos.y.toFloat(),
-            z - camera.pos.z.toFloat(),
+            x - camera.cameraPos.x.toFloat(),
+            y - camera.cameraPos.y.toFloat(),
+            z - camera.cameraPos.z.toFloat(),
         )
 
         val lScale = scale * if (increase) {
@@ -339,7 +339,7 @@ object Renderer3d {
         Renderer.pushMatrix()
             .disableDepth()
             .disableCull()
-        RenderSystem.lineWidth(thickness)
+//        RenderSystem.lineWidth(thickness)
 
         val (r, g, b, a) = Color(color.toInt(), true)
 
@@ -350,7 +350,7 @@ object Renderer3d {
         pos(x2, y2, z2).color(r, g, b, a).normal(normalVec.x, normalVec.y, normalVec.z)
         draw()
 
-        RenderSystem.lineWidth(1f)
+//        RenderSystem.lineWidth(1f)
         Renderer
             .enableCull()
             .enableDepth()

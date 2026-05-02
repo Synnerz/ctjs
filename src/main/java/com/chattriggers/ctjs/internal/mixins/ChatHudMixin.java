@@ -31,8 +31,7 @@ public class ChatHudMixin {
         method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V",
         at = @At(
             value = "INVOKE",
-            target = "Ljava/util/List;remove(I)Ljava/lang/Object;",
-            shift = At.Shift.BEFORE
+            target = "Ljava/util/List;removeLast()Ljava/lang/Object;"
         )
     )
     private void injectMessageRemovedForChatLimit(ChatHudLine message, CallbackInfo ci) {
