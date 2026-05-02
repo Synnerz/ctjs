@@ -74,8 +74,12 @@ object World {
     @JvmStatic
     fun getDifficulty(): Settings.Difficulty? = toMC()?.difficulty?.let(Settings.Difficulty::fromMC)
 
+    /**
+     * - as of 1.21.11 minecraft no longer has this field, it now returns -1 to support backwards compat
+     */
+    @Deprecated("since 1.21.11")
     @JvmStatic
-    fun getMoonPhase(): Int = -1// toMC()?.moonPhase ?: -1
+    fun getMoonPhase(): Int = -1
 
     /**
      * Gets the [Block] at a location in the world.
