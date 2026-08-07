@@ -10,9 +10,9 @@ import gg.essential.elementa.dsl.component2
 import gg.essential.elementa.dsl.component3
 import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.render.LightmapTextureManager
-import net.minecraft.client.render.Tessellator
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.LightTexture
+import com.mojang.blaze3d.vertex.Tesselator
 import org.joml.Vector3f
 import org.mozilla.javascript.NativeObject
 import java.awt.Color
@@ -21,7 +21,7 @@ object Renderer3d {
     private var firstVertex = true
     private var began = false
 
-    private val tessellator = Tessellator.getInstance()
+    private val tessellator = Tesselator.getInstance()
     private val worldRenderer = UGraphics.getFromTessellator()
 
     /**
@@ -62,7 +62,7 @@ object Renderer3d {
             begin()
         if (!firstVertex)
             worldRenderer.endVertex()
-        val camera = Client.getMinecraft().gameRenderer.camera.pos
+        val camera = Client.getMinecraft().gameRenderer.mainCamera.position
         worldRenderer.pos(Renderer.matrixStack, x.toDouble() - camera.x, y.toDouble() - camera.y, z.toDouble() - camera.z)
         firstVertex = false
     }
@@ -219,11 +219,11 @@ object Renderer3d {
         val (lines, width, height) = Renderer.splitText(text)
 
         val fontRenderer = Renderer.getFontRenderer()
-        val camera = Client.getMinecraft().gameRenderer.camera
+        val camera = Client.getMinecraft().gameRenderer.mainCamera
         val renderPos = Vec3f(
-            x - camera.pos.x.toFloat(),
-            y - camera.pos.y.toFloat(),
-            z - camera.pos.z.toFloat(),
+            x - camera.position.x.toFloat(),
+            y - camera.position.y.toFloat(),
+            z - camera.position.z.toFloat(),
         )
 
         val lScale = scale * if (increase) {
@@ -234,28 +234,28 @@ object Renderer3d {
 
         Renderer.pushMatrix()
         Renderer.translate(renderPos.x, renderPos.y, renderPos.z)
-        Renderer.multiply(camera.rotation)
+        Renderer.multiply(camera.rotation())
         Renderer.scale(lScale, -lScale, lScale)
 
-        val opacity = (Settings.toMC().getTextBackgroundOpacity(0.25f) * 255).toInt() shl 24
+        val opacity = (Settings.toMC().getBackgroundOpacity(0.25f) * 255).toInt() shl 24
 
         val xShift = -width / 2
         val yShift = -height / 2
 
-        val vertexConsumers = Client.getMinecraft().bufferBuilders.entityVertexConsumers
+        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
         var yOffset = 0
-        val textLayer = if (renderThroughBlocks) TextRenderer.TextLayerType.SEE_THROUGH else TextRenderer.TextLayerType.NORMAL
+        val textLayer = if (renderThroughBlocks) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
 
         for (line in lines) {
             val centerShift = if (centered) {
-                xShift + (fontRenderer.getWidth(line) / 2f)
+                xShift + (fontRenderer.width(line) / 2f)
             } else 0f
 
             Renderer.pushMatrix()
-            val matrix = Renderer.matrixStack.toMC().peek().positionMatrix
+            val matrix = Renderer.matrixStack.toMC().last().pose()
 
             if (renderBlackBox) {
-                fontRenderer.draw(
+                fontRenderer.drawInBatch(
                     line,
                     xShift - centerShift,
                     yShift + yOffset,
@@ -265,12 +265,12 @@ object Renderer3d {
                     vertexConsumers,
                     textLayer,
                     opacity,
-                    LightmapTextureManager.MAX_LIGHT_COORDINATE
+                    LightTexture.FULL_BRIGHT
                 )
                 Renderer.translate(0f, 0f, -0.03f)
             }
 
-            fontRenderer.draw(
+            fontRenderer.drawInBatch(
                 line,
                 xShift - centerShift,
                 yShift + yOffset,
@@ -280,12 +280,12 @@ object Renderer3d {
                 vertexConsumers,
                 textLayer,
                 0,
-                LightmapTextureManager.MAX_LIGHT_COORDINATE
+                LightTexture.FULL_BRIGHT
             )
-            vertexConsumers.draw()
+            vertexConsumers.endBatch()
             Renderer.popMatrix()
 
-            yOffset += fontRenderer.fontHeight + 1
+            yOffset += fontRenderer.lineHeight + 1
         }
 
         Renderer.popMatrix()

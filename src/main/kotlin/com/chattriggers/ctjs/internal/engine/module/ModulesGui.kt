@@ -4,11 +4,11 @@ import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.Text
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.Screen
 
-object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
+object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules")) {
     private val window = object {
         val title = Text("Modules").setScale(2f).setShadow(true)
         val exit = Text(ChatLib.addColor("&cx")).setScale(2f)
@@ -16,13 +16,13 @@ object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
         var scroll = 0f
     }
 
-    override fun render(ctx: DrawContext?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-        ctx!!.matrices.pushMatrix()
+    override fun render(ctx: GuiGraphics?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
+        ctx!!.pose().pushMatrix()
 
         val middle = Renderer.screen.getWidth() / 2
         val width = (Renderer.screen.getWidth() - 100).coerceAtMost(500)
 
-        ctx.fill(0, 0, ctx.scaledWindowWidth, ctx.scaledWindowHeight, 0x50000000)
+        ctx.fill(0, 0, ctx.guiWidth(), ctx.guiHeight(), 0x50000000)
 
         if (-window.scroll > window.height - Renderer.screen.getHeight() + 20)
             window.scroll = -window.height + Renderer.screen.getHeight() - 20
@@ -32,7 +32,7 @@ object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
             val rx = Renderer.screen.getWidth() - 20
             val ry = Renderer.screen.getHeight() - 20
             ctx.fill(rx, ry, rx + 20, ry + 20, 0xaa000000.toInt())
-            ctx.drawText(Renderer.getFontRenderer(), "^", Renderer.screen.getWidth() - 12, Renderer.screen.getHeight() - 12, -1, false)
+            ctx.drawString(Renderer.getFontRenderer(), "^", Renderer.screen.getWidth() - 12, Renderer.screen.getHeight() - 12, -1, false)
         }
 
         val ox = middle - width / 2
@@ -49,10 +49,10 @@ object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
             window.height += it.draw(ctx, middle - width / 2, (window.scroll + window.height).toInt(), width)
         }
 
-        ctx.matrices.popMatrix()
+        ctx.pose().popMatrix()
     }
 
-    override fun mouseClicked(click: Click, double: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, double: Boolean): Boolean {
         super.mouseClicked(click, double)
         val mouseX = click.x
         val mouseY = click.y
@@ -68,7 +68,7 @@ object ModulesGui : Screen(net.minecraft.text.Text.literal("Modules")) {
         if (mouseX > Renderer.screen.getWidth() / 2f + width / 2f - 25 && mouseX < Renderer.screen.getWidth() / 2f + width / 2f
             && mouseY > window.scroll + 95 && mouseY < window.scroll + 120
         ) {
-            Player.toMC()?.closeScreen()
+            Player.toMC()?.clientSideCloseContainer()
             return false
         }
 

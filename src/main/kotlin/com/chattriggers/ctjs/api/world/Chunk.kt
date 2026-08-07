@@ -3,12 +3,12 @@ package com.chattriggers.ctjs.api.world
 import com.chattriggers.ctjs.api.CTWrapper
 import com.chattriggers.ctjs.api.entity.BlockEntity
 import com.chattriggers.ctjs.api.entity.Entity
-import com.chattriggers.ctjs.internal.mixins.ChunkAccessor
+import com.chattriggers.ctjs.internal.mixins.ChunkAccessAccessor
 import com.chattriggers.ctjs.MCBlockPos
 import com.chattriggers.ctjs.MCChunk
 import com.chattriggers.ctjs.MCEntity
 import com.chattriggers.ctjs.internal.utils.asMixin
-import net.minecraft.util.math.Box
+import net.minecraft.world.phys.AABB
 
 // TODO: Add more methods here?
 class Chunk(override val mcValue: MCChunk) : CTWrapper<MCChunk> {
@@ -50,11 +50,11 @@ class Chunk(override val mcValue: MCChunk) : CTWrapper<MCChunk> {
      * @return the entity list
      */
     fun getAllEntitiesOfType(clazz: Class<MCEntity>): List<Entity> {
-        val box = Box(
-            MCBlockPos(getMinBlockX(), mcValue.bottomY, getMinBlockZ())
-        ).stretch(16.0, mcValue.topYInclusive.toDouble(), 16.0)
+        val box = AABB(
+            MCBlockPos(getMinBlockX(), mcValue.minY, getMinBlockZ())
+        ).expandTowards(16.0, mcValue.maxY.toDouble(), 16.0)
 
-        return World.toMC()?.getEntitiesByClass(clazz, box) { true }?.map(Entity::fromMC) ?: listOf()
+        return World.toMC()?.getEntitiesOfClass(clazz, box) { true }?.map(Entity::fromMC) ?: listOf()
     }
 
     /**
@@ -63,7 +63,7 @@ class Chunk(override val mcValue: MCChunk) : CTWrapper<MCChunk> {
      * @return the block entity list
      */
     fun getAllBlockEntities(): List<BlockEntity> {
-        return mcValue.asMixin<ChunkAccessor>().blockEntities.values.map(::BlockEntity)
+        return mcValue.asMixin<ChunkAccessAccessor>().blockEntities.values.map(::BlockEntity)
     }
 
     /**

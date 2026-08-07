@@ -5,10 +5,10 @@ import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.platform.DestFactor
 import com.mojang.blaze3d.platform.SourceFactor
-import net.minecraft.client.render.RenderLayer
+import net.minecraft.client.renderer.RenderType
 
 object LegacyPipelineBuilder {
-    private val layerList = mutableMapOf<String, RenderLayer>()
+    private val layerList = mutableMapOf<String, RenderType>()
     private val pipelineList = mutableMapOf<String, RenderPipeline>()
     private var cull: Boolean? = null
     private var depth: Boolean? = null
@@ -78,16 +78,16 @@ object LegacyPipelineBuilder {
         return pipeline
     }
 
-    fun layer(): RenderLayer {
+    fun layer(): RenderType {
         if (layerList.containsKey(state())) return layerList[state()]!!
 
-        val layer = RenderLayer.of(
+        val layer = RenderType.create(
             "ctjs/custom/layer${hashCode()}",
             1536,
             build(),
-            RenderLayer.MultiPhaseParameters
+            RenderType.CompositeState
                 .builder()
-                .build(false)
+                .createCompositeState(false)
         )
         layerList[state()] = layer
 

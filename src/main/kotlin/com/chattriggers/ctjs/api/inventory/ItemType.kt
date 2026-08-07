@@ -5,8 +5,8 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.world.block.BlockType
 import com.chattriggers.ctjs.MCItem
 import com.chattriggers.ctjs.internal.utils.toIdentifier
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.BuiltInRegistries
 
 class ItemType(override val mcValue: MCItem) : CTWrapper<MCItem> {
     init {
@@ -15,9 +15,9 @@ class ItemType(override val mcValue: MCItem) : CTWrapper<MCItem> {
         }
     }
 
-    constructor(itemName: String) : this(Registries.ITEM[itemName.toIdentifier()])
+    constructor(itemName: String) : this(BuiltInRegistries.ITEM.getValue(itemName.toIdentifier()))
 
-    constructor(id: Int) : this(Registries.ITEM[id])
+    constructor(id: Int) : this(BuiltInRegistries.ITEM.byId(id))
 
     constructor(blockType: BlockType) : this(blockType.toMC().asItem())
 
@@ -25,11 +25,11 @@ class ItemType(override val mcValue: MCItem) : CTWrapper<MCItem> {
 
     fun getNameComponent(): TextComponent = TextComponent(mcValue.name)
 
-    fun getId(): Int = MCItem.getRawId(mcValue)
+    fun getId(): Int = MCItem.getId(mcValue)
 
-    fun getTranslationKey(): String = mcValue.translationKey
+    fun getTranslationKey(): String = mcValue.descriptionId
 
-    fun getRegistryName(): String = Registries.ITEM.getId(mcValue).toString()
+    fun getRegistryName(): String = BuiltInRegistries.ITEM.getKey(mcValue).toString()
 
     fun asItem(): Item = Item(this)
 

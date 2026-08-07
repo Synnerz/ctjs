@@ -3,7 +3,7 @@ package com.chattriggers.ctjs.api.inventory.action
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.inventory.Inventory
-import net.minecraft.screen.slot.SlotActionType
+import net.minecraft.world.inventory.ClickType
 
 abstract class Action(var slot: Int, var windowId: Int) {
     fun setSlot(slot: Int) = apply {
@@ -16,8 +16,8 @@ abstract class Action(var slot: Int, var windowId: Int) {
 
     internal abstract fun complete()
 
-    protected fun doClick(button: Int, mode: SlotActionType) {
-        Client.getMinecraft().interactionManager?.clickSlot(
+    protected fun doClick(button: Int, mode: ClickType) {
+        Client.getMinecraft().gameMode?.handleInventoryMouseClick(
             windowId,
             slot,
             button,

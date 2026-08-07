@@ -7,13 +7,13 @@ import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.getOrNull
 import com.chattriggers.ctjs.internal.utils.toIdentifier
 import gg.essential.universal.UMatrixStack
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.toast.ToastManager
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.components.toasts.ToastManager
+import net.minecraft.resources.ResourceLocation
 import org.mozilla.javascript.*
-import net.minecraft.client.toast.Toast
+import net.minecraft.client.gui.components.toasts.Toast
 
 // https://github.com/Edgeburn/Toasts
 /**
@@ -42,12 +42,12 @@ class Toast(config: NativeObject) : Toast {
         get() = descriptionBacker
         set(value) { descriptionBacker = value?.let { TextComponent(it) } }
 
-    private var backgroundBacker: Identifier? = Identifier.ofVanilla("toast/advancement")
+    private var backgroundBacker: ResourceLocation? = ResourceLocation.withDefaultNamespace("toast/advancement")
     var background: Any?
         get() = backgroundBacker
         set(value) { backgroundBacker = toIdentifier(value) }
 
-    private var iconBacker: Identifier? = null
+    private var iconBacker: ResourceLocation? = null
     var icon: Any?
         get() = iconBacker
         set(value) { iconBacker = toIdentifier(value) }
@@ -55,12 +55,12 @@ class Toast(config: NativeObject) : Toast {
     private var toastWidth = config.getOrNull("width")?.let {
         require(it is Number) { "Toast \"width\" must be a number" }
         it.toInt()
-    } ?: super.getWidth()
+    } ?: super.width()
 
     private var toastHeight = config.getOrNull("height")?.let {
         require(it is Number) { "Toast \"height\" must be a number" }
         it.toInt()
-    } ?: super.getHeight()
+    } ?: super.height()
 
     var displayTime = config.getOrNull("displayTime")?.let {
         require(it is Number) { "Toast \"displayTime\" must be a number" }
@@ -85,15 +85,15 @@ class Toast(config: NativeObject) : Toast {
         icon = config.getOrNull("icon")
     }
 
-    override fun getWidth() = toastWidth
-    override fun getHeight() = toastHeight
+    override fun width() = toastWidth
+    override fun height() = toastHeight
 
     fun show() = apply {
         startTime = null
-        Client.getMinecraft().toastManager.add(this)
+        Client.getMinecraft().toastManager.addToast(this)
     }
 
-    override fun getVisibility(): Toast.Visibility? = visibility
+    override fun getWantedVisibility(): Toast.Visibility? = visibility
 
     override fun update(manager: ToastManager?, time: Long) {
        if (startTime == null) {
@@ -105,9 +105,9 @@ class Toast(config: NativeObject) : Toast {
         visibility = if (elapsed < duration) Toast.Visibility.SHOW else Toast.Visibility.HIDE
     }
 
-    override fun draw(context: DrawContext, textRenderer: TextRenderer, startTime: Long) {
+    override fun render(context: GuiGraphics, textRenderer: Font, startTime: Long) {
         if (customRenderFunction != null) {
-            Renderer.withMatrix(UMatrixStack(context.matrices).toMC()) {
+            Renderer.withMatrix(UMatrixStack(context.pose()).toMC()) {
                 try {
                     JSLoader.invoke(customRenderFunction!!, emptyArray(), thisObj = jsReceiver!!)
                 } catch (e: Throwable) {
@@ -120,25 +120,25 @@ class Toast(config: NativeObject) : Toast {
         } else {
             backgroundBacker?.let {
                 // RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
-                context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, it, 0, 0, width, height)
+                context.blitSprite(RenderPipelines.GUI_TEXTURED, it, 0, 0, width(), height())
             }
 
-            iconBacker?.let { it: Identifier ->
+            iconBacker?.let { it: ResourceLocation ->
                 // RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
-                val iconSize = height - ICON_PADDING * 2
-                context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, it, ICON_PADDING,ICON_PADDING, iconSize,iconSize)
+                val iconSize = height() - ICON_PADDING * 2
+                context.blitSprite(RenderPipelines.GUI_TEXTURED, it, ICON_PADDING,ICON_PADDING, iconSize,iconSize)
             }
 
-            val textX = if (icon == null) ICON_PADDING else height
+            val textX = if (icon == null) ICON_PADDING else height()
             var textY = ICON_PADDING
 
             titleBacker?.let {
-                context.drawText(textRenderer, it, textX, textY, 0xffffff, false)
-                textY += textRenderer.fontHeight + 1
+                context.drawString(textRenderer, it, textX, textY, 0xffffff, false)
+                textY += textRenderer.lineHeight + 1
             }
 
             descriptionBacker?.let {
-                context.drawText(textRenderer, it, textX, textY, 0xffffff, false)
+                context.drawString(textRenderer, it, textX, textY, 0xffffff, false)
             }
         }
     }
@@ -146,10 +146,10 @@ class Toast(config: NativeObject) : Toast {
     private companion object {
         private const val ICON_PADDING = 7
 
-        private fun toIdentifier(value: Any?): Identifier? = when (value) {
+        private fun toIdentifier(value: Any?): ResourceLocation? = when (value) {
             is Image -> value.getIdOrRegister()
             is CharSequence -> value.toString().toIdentifier()
-            is Identifier -> value
+            is ResourceLocation -> value
             null -> null
             else -> throw IllegalArgumentException(
                 "Toast \"background\" must be an Image or a string corresponding to a resource identifier"

@@ -2,9 +2,9 @@ package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.client.Client
-import net.minecraft.client.texture.NativeImage
-import net.minecraft.client.texture.NativeImageBackedTexture
-import net.minecraft.util.Identifier
+import com.mojang.blaze3d.platform.NativeImage
+import net.minecraft.client.renderer.texture.DynamicTexture
+import net.minecraft.resources.ResourceLocation
 import org.lwjgl.system.MemoryUtil
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -19,7 +19,7 @@ class Image(var image: BufferedImage?) {
     private val textureWidth = image?.width ?: 0
     private val textureHeight = image?.height ?: 0
     private val aspectRatio = if (textureHeight != 0) textureHeight.toFloat() / textureWidth else 0f
-    private var identifier: Identifier? = null
+    private var identifier: ResourceLocation? = null
 
     init {
         CTJS.images.add(this)
@@ -33,16 +33,16 @@ class Image(var image: BufferedImage?) {
 
     fun getTextureHeight(): Int = textureHeight
 
-    fun getTexture(): NativeImageBackedTexture? = texture?.texture
+    fun getTexture(): DynamicTexture? = texture?.texture
 
-    internal fun getIdOrRegister(): Identifier {
+    internal fun getIdOrRegister(): ResourceLocation {
         if (identifier == null) {
-            identifier = Identifier.of(CTJS.MOD_ID,"image${nextIdentifierIndex++}")
+            identifier = ResourceLocation.fromNamespaceAndPath(CTJS.MOD_ID,"image${nextIdentifierIndex++}")
             if (texture != null) {
-                Client.getMinecraft().textureManager.registerTexture(identifier!!, texture!!.texture)
+                Client.getMinecraft().textureManager.register(identifier!!, texture!!.texture)
             } else {
                 Client.scheduleTask {
-                    Client.getMinecraft().textureManager.registerTexture(identifier!!, texture!!.texture)
+                    Client.getMinecraft().textureManager.register(identifier!!, texture!!.texture)
                 }
             }
         }
@@ -79,7 +79,7 @@ class Image(var image: BufferedImage?) {
             Renderer.drawImage(this, x, y, drawWidth, drawHeight)
     }
 
-    private data class Texture(val texture: NativeImageBackedTexture, val buffer: ByteBuffer)
+    private data class Texture(val texture: DynamicTexture, val buffer: ByteBuffer)
 
     companion object {
         private var nextIdentifierIndex = 0
@@ -141,7 +141,7 @@ class Image(var image: BufferedImage?) {
                 val buffer = MemoryUtil.memAlloc(it.size())
                 buffer.put(it.toByteArray())
                 buffer.rewind()
-                Texture(NativeImageBackedTexture( { "ct:${UUID.randomUUID()}" }, NativeImage.read(buffer)), buffer)
+                Texture(DynamicTexture( { "ct:${UUID.randomUUID()}" }, NativeImage.read(buffer)), buffer)
             }
         }
     }

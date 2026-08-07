@@ -1,20 +1,20 @@
 package com.chattriggers.ctjs.api.inventory.nbt
 
-import com.chattriggers.ctjs.internal.mixins.NbtCompoundAccessor
+import com.chattriggers.ctjs.internal.mixins.CompoundTagAccessor
 import com.chattriggers.ctjs.MCNbtBase
 import com.chattriggers.ctjs.MCNbtCompound
 import com.chattriggers.ctjs.internal.utils.asMixin
-import net.minecraft.nbt.NbtByteArray
-import net.minecraft.nbt.NbtIntArray
-import net.minecraft.nbt.NbtLongArray
+import net.minecraft.nbt.ByteArrayTag
+import net.minecraft.nbt.IntArrayTag
+import net.minecraft.nbt.LongArrayTag
 import org.mozilla.javascript.NativeObject
 
 class NBTTagCompound(override val mcValue: MCNbtCompound) : NBTBase(mcValue) {
     val tagMap: Map<String, MCNbtBase>
-        get() = mcValue.asMixin<NbtCompoundAccessor>().entries
+        get() = mcValue.asMixin<CompoundTagAccessor>().tags
 
     val keySet: Set<String>
-        get() = mcValue.keys
+        get() = mcValue.keySet()
 
     enum class NBTDataType {
         BYTE,
@@ -34,7 +34,7 @@ class NBTTagCompound(override val mcValue: MCNbtCompound) : NBTBase(mcValue) {
 
     fun getTag(key: String): NBTBase? = mcValue.get(key)?.let(::fromMC)
 
-    fun getTagId(key: String) = mcValue.get(key)?.type
+    fun getTagId(key: String) = mcValue.get(key)?.id
 
     fun getByte(key: String) = mcValue.getByte(key)
 
@@ -75,17 +75,17 @@ class NBTTagCompound(override val mcValue: MCNbtCompound) : NBTBase(mcValue) {
             }
             NBTDataType.BYTE_ARRAY -> {
                 if (mcValue.contains(key))
-                    (tagMap[key] as NbtByteArray).byteArray
+                    (tagMap[key] as ByteArrayTag).asByteArray
                 else null
             }
             NBTDataType.INT_ARRAY -> {
                 if (mcValue.contains(key))
-                    (tagMap[key] as NbtIntArray).intArray
+                    (tagMap[key] as IntArrayTag).asIntArray
                 else null
             }
             NBTDataType.LONG_ARRAY -> {
                 if (mcValue.contains(key))
-                    (tagMap[key] as NbtLongArray).longArray
+                    (tagMap[key] as LongArrayTag).asLongArray
                 else null
             }
             NBTDataType.BOOLEAN -> getBoolean(key)

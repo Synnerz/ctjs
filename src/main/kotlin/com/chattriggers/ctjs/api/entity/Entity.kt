@@ -9,29 +9,29 @@ import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.MCDimensionType
 import com.chattriggers.ctjs.MCEntity
 import com.chattriggers.ctjs.MCLivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.registry.RegistryKey
-import net.minecraft.util.math.MathHelper
-import net.minecraft.world.dimension.DimensionTypes
+import net.minecraft.world.entity.player.Player
+import net.minecraft.resources.ResourceKey
+import net.minecraft.util.Mth
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes
 import java.util.*
 import kotlin.math.sqrt
 
 open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
-    fun getX() = mcValue.entityPos.x
+    fun getX() = mcValue.position().x
 
-    fun getY() = mcValue.entityPos.y
+    fun getY() = mcValue.position().y
 
-    fun getZ() = mcValue.entityPos.z
+    fun getZ() = mcValue.position().z
 
     fun getPos() = BlockPos(getX(), getY(), getZ())
 
-    fun getRotation() = mcValue.rotationClient
+    fun getRotation() = mcValue.rotationVector
 
-    fun getLastX() = mcValue.lastRenderX
+    fun getLastX() = mcValue.xOld
 
-    fun getLastY() = mcValue.lastRenderY
+    fun getLastY() = mcValue.yOld
 
-    fun getLastZ() = mcValue.lastRenderZ
+    fun getLastZ() = mcValue.zOld
 
     fun getRenderX() = getLastX() + (getX() - getLastX()) * Renderer.partialTicks
 
@@ -45,7 +45,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's pitch
      */
-    fun getPitch() = MathHelper.wrapDegrees(mcValue.getPitch(Renderer.partialTicks))
+    fun getPitch() = Mth.wrapDegrees(mcValue.getViewXRot(Renderer.partialTicks))
 
     /**
      * Gets the yaw, the vertical direction the entity is facing towards.
@@ -53,7 +53,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's yaw
      */
-    fun getYaw() = MathHelper.wrapDegrees(mcValue.getYaw(Renderer.partialTicks))
+    fun getYaw() = Mth.wrapDegrees(mcValue.getViewYRot(Renderer.partialTicks))
 
     /**
      * Gets the entity's x motion.
@@ -61,7 +61,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's x motion
      */
-    fun getMotionX(): Double = mcValue.velocity.x
+    fun getMotionX(): Double = mcValue.deltaMovement.x
 
     /**
      * Gets the entity's y motion.
@@ -69,7 +69,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's y motion
      */
-    fun getMotionY(): Double = mcValue.velocity.y
+    fun getMotionY(): Double = mcValue.deltaMovement.y
 
     /**
      * Gets the entity's z motion.
@@ -77,7 +77,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's z motion
      */
-    fun getMotionZ(): Double = mcValue.velocity.z
+    fun getMotionZ(): Double = mcValue.deltaMovement.z
 
     /**
      * Returns the entity this entity is riding, if one exists
@@ -93,7 +93,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return List of entities, empty if there are no riders
      */
-    fun getRiders() = mcValue.passengerList?.map(::fromMC).orEmpty()
+    fun getRiders() = mcValue.passengers?.map(::fromMC).orEmpty()
 
     /**
      * Checks whether the entity is dead.
@@ -109,14 +109,14 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's width
      */
-    fun getWidth(): Float = mcValue.width
+    fun getWidth(): Float = mcValue.bbWidth
 
     /**
      * Gets the entire height of the entity's hitbox
      *
      * @return the entity's height
      */
-    fun getHeight(): Float = mcValue.height
+    fun getHeight(): Float = mcValue.bbHeight
 
     /**
      * Gets the height of the eyes on the entity,
@@ -125,7 +125,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the height of the entity's eyes
      */
-    fun getEyeHeight(): Float = mcValue.standingEyeHeight
+    fun getEyeHeight(): Float = mcValue.eyeHeight
 
     /**
      * Gets the name of the entity, could be "Villager",
@@ -167,7 +167,7 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
      *
      * @return the entity's air level
      */
-    fun getAir(): Int = mcValue.air
+    fun getAir(): Int = mcValue.airSupply
 
     fun distanceTo(other: Entity): Float = distanceTo(other.mcValue)
 
@@ -177,29 +177,29 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
         blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble(),
     )
 
-    fun distanceTo(x: Double, y: Double, z: Double): Double = sqrt(mcValue.squaredDistanceTo(x, y, z))
+    fun distanceTo(x: Double, y: Double, z: Double): Double = sqrt(mcValue.distanceToSqr(x, y, z))
 
-    fun isOnGround() = mcValue.isOnGround
+    fun isOnGround() = mcValue.onGround()
 
-    fun isCollided() = World.toMC()?.getOtherEntities(mcValue, mcValue.boundingBox)?.isNotEmpty() ?: false
+    fun isCollided() = World.toMC()?.getEntities(mcValue, mcValue.boundingBox)?.isNotEmpty() ?: false
 
-    fun getDistanceWalked() = mcValue.distanceTraveled / 0.6f
+    fun getDistanceWalked() = mcValue.moveDist / 0.6f
 
-    fun getStepHeight() = mcValue.stepHeight
+    fun getStepHeight() = mcValue.maxUpStep()
 
-    fun hasNoClip() = mcValue.noClip
+    fun hasNoClip() = mcValue.noPhysics
 
-    fun getTicksExisted() = mcValue.age
+    fun getTicksExisted() = mcValue.tickCount
 
-    fun getFireResistance() = mcValue.fireTicks
+    fun getFireResistance() = mcValue.remainingFireTicks
 
-    fun isImmuneToFire() = mcValue.isFireImmune
+    fun isImmuneToFire() = mcValue.fireImmune()
 
-    fun isInWater() = mcValue.isTouchingWater
+    fun isInWater() = mcValue.isInWater
 
-    fun isWet() = mcValue.isTouchingWaterOrRain
+    fun isWet() = mcValue.isInWaterOrRain
 
-    fun getDimension() = mcValue.entityWorld.dimensionEntry.key.let { key ->
+    fun getDimension() = mcValue.level().dimensionTypeRegistration().unwrapKey().let { key ->
         DimensionType.entries.first { it.toMC() == key }
     }
 
@@ -210,28 +210,28 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
     fun isInLava() = mcValue.isInLava
 
     @JvmOverloads
-    fun getLookVector(partialTicks: Float = Renderer.partialTicks) = mcValue.getRotationVec(partialTicks)
+    fun getLookVector(partialTicks: Float = Renderer.partialTicks) = mcValue.getViewVector(partialTicks)
 
     @JvmOverloads
-    fun getEyePosition(partialTicks: Float = Renderer.partialTicks) = mcValue.eyePos
+    fun getEyePosition(partialTicks: Float = Renderer.partialTicks) = mcValue.eyePosition
 
-    fun canBeCollidedWith() = mcValue.isCollidable(null)
+    fun canBeCollidedWith() = mcValue.canBeCollidedWith(null)
 
     fun canBePushed() = mcValue.isPushable
 
-    fun isSneaking() = mcValue.isSneaking
+    fun isSneaking() = mcValue.isShiftKeyDown
 
     fun isSprinting() = mcValue.isSprinting
 
     fun isInvisible() = mcValue.isInvisible
 
-    fun isOutsideBorder() = World.toMC()?.worldBorder?.contains(mcValue.blockPos) ?: false
+    fun isOutsideBorder() = World.toMC()?.worldBorder?.isWithinBounds(mcValue.blockPosition()) ?: false
 
     fun isBurning(): Boolean = mcValue.isOnFire
 
-    fun getWorld() = mcValue.entityWorld
+    fun getWorld() = mcValue.level()
 
-    fun getChunk(): Chunk = Chunk(getWorld().getWorldChunk(mcValue.blockPos))
+    fun getChunk(): Chunk = Chunk(getWorld().getChunkAt(mcValue.blockPosition()))
 
     override fun toString(): String {
         val coordStrings = listOf(getX(), getY(), getZ()).map { "%.3f".format(it) }
@@ -239,18 +239,18 @@ open class Entity(override val mcValue: MCEntity) : CTWrapper<MCEntity> {
     }
 
     enum class DimensionType(
-        override val mcValue: RegistryKey<MCDimensionType>,
-    ) : CTWrapper<RegistryKey<MCDimensionType>> {
-        OVERWORLD(DimensionTypes.OVERWORLD),
-        NETHER(DimensionTypes.THE_NETHER),
-        END(DimensionTypes.THE_END),
-        OVERWORLD_CAVES(DimensionTypes.OVERWORLD_CAVES),
+        override val mcValue: ResourceKey<MCDimensionType>,
+    ) : CTWrapper<ResourceKey<MCDimensionType>> {
+        OVERWORLD(BuiltinDimensionTypes.OVERWORLD),
+        NETHER(BuiltinDimensionTypes.NETHER),
+        END(BuiltinDimensionTypes.END),
+        OVERWORLD_CAVES(BuiltinDimensionTypes.OVERWORLD_CAVES),
     }
 
     companion object {
         @JvmStatic
         fun fromMC(entity: MCEntity): Entity = when (entity) {
-            is PlayerEntity -> PlayerMP(entity)
+            is Player -> PlayerMP(entity)
             is MCLivingEntity -> LivingEntity(entity)
             else -> Entity(entity)
         }

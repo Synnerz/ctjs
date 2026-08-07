@@ -37,7 +37,7 @@ repositories {
 dependencies {
     // To change the versions see the gradle/libs.versions.toml
     minecraft(libs.minecraft)
-    mappings(variantOf(libs.yarn) { classifier("v2") })
+    mappings(loom.officialMojangMappings())
     modImplementation(libs.bundles.fabric)
 
     modImplementation(libs.bundles.included) { include(this) }

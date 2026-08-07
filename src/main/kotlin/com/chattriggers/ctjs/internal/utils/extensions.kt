@@ -2,8 +2,8 @@ package com.chattriggers.ctjs.internal.utils
 
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.fasterxml.jackson.core.Version
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.MathHelper
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.util.Mth
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.Scriptable
 import java.net.URLEncoder
@@ -19,8 +19,8 @@ fun String.toVersion(): Version {
     return Version(split.getOrElse(0) { 0 }, split.getOrElse(1) { 0 }, split.getOrElse(2) { 0 }, extra, null, null)
 }
 
-fun String.toIdentifier(): Identifier {
-    return Identifier.of(if (':' in this) this else "minecraft:$this")
+fun String.toIdentifier(): ResourceLocation {
+    return ResourceLocation.parse(if (':' in this) this else "minecraft:$this")
 }
 
 fun String.urlEncode() = URLEncoder.encode(this, Charset.defaultCharset())
@@ -47,10 +47,10 @@ fun NativeObject?.getOrNull(key: String): Any? {
     return this?.get(key).takeIf { it != Scriptable.NOT_FOUND }
 }
 
-fun Double.toRadians() = this * MathHelper.RADIANS_PER_DEGREE
-fun Float.toRadians() = this * MathHelper.RADIANS_PER_DEGREE
-fun Double.toDegrees() = this * MathHelper.DEGREES_PER_RADIAN
-fun Float.toDegrees() = this * MathHelper.DEGREES_PER_RADIAN
+fun Double.toRadians() = this * Mth.DEG_TO_RAD
+fun Float.toRadians() = this * Mth.DEG_TO_RAD
+fun Double.toDegrees() = this * Mth.RAD_TO_DEG
+fun Float.toDegrees() = this * Mth.RAD_TO_DEG
 
 fun KClass<*>.descriptorString(): String = java.descriptorString()
 fun KClass<*>.descriptor() = Descriptor.Object(descriptorString())

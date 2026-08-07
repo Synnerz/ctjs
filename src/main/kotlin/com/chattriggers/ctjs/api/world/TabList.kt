@@ -6,20 +6,20 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.entity.Team
 import com.chattriggers.ctjs.api.message.TextComponent
-import com.chattriggers.ctjs.internal.mixins.ClientPlayNetworkHandlerAccessor
-import com.chattriggers.ctjs.internal.mixins.PlayerListEntryAccessor
-import com.chattriggers.ctjs.internal.mixins.PlayerListHudAccessor
+import com.chattriggers.ctjs.internal.mixins.ClientPacketListenerAccessor
+import com.chattriggers.ctjs.internal.mixins.PlayerInfoAccessor
+import com.chattriggers.ctjs.internal.mixins.PlayerTabOverlayAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import com.google.common.collect.ComparisonChain
 import com.google.common.collect.Ordering
 import com.mojang.authlib.GameProfile
 import gg.essential.elementa.state.BasicState
-import net.minecraft.client.network.PlayerListEntry
-import net.minecraft.scoreboard.ScoreboardDisplaySlot
-import net.minecraft.scoreboard.ScoreboardObjective
-import net.minecraft.text.Text
-import net.minecraft.util.Util
-import net.minecraft.world.GameMode
+import net.minecraft.client.multiplayer.PlayerInfo
+import net.minecraft.world.scores.DisplaySlot
+import net.minecraft.world.scores.Objective
+import net.minecraft.network.chat.Component
+import net.minecraft.Util
+import net.minecraft.world.level.GameType
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -39,7 +39,7 @@ object TabList {
      * Gets the scoreboard objective corresponding to the tab list, or null if it doesn't exist
      */
     @JvmStatic
-    fun getObjective(): ScoreboardObjective? = Scoreboard.toMC()?.getObjectiveForSlot(ScoreboardDisplaySlot.LIST)
+    fun getObjective(): Objective? = Scoreboard.toMC()?.getDisplayObjective(DisplaySlot.LIST)
 
     /**
      * Gets the tab list header as a [TextComponent]
@@ -78,7 +78,7 @@ object TabList {
                 tabListHeader = header
                 toMC()?.setHeader(header)
             }
-            is CharSequence, is Text -> {
+            is CharSequence, is Component -> {
                 tabListHeader = TextComponent(header)
                 toMC()?.setHeader(tabListHeader)
             }
@@ -127,7 +127,7 @@ object TabList {
                 tabListHeader = footer
                 toMC()?.setFooter(footer)
             }
-            is CharSequence, is Text -> {
+            is CharSequence, is Component -> {
                 tabListHeader = TextComponent(footer)
                 toMC()?.setFooter(tabListHeader)
             }
@@ -148,11 +148,11 @@ object TabList {
         val scoreboard = Scoreboard.toMC() ?: return emptyList()
         val tabListObjective = getObjective() ?: return emptyList()
 
-        val scores = scoreboard.getScoreboardEntries(tabListObjective)
+        val scores = scoreboard.listPlayerScores(tabListObjective)
 
         return scores.map {
-            val team = scoreboard.getTeam(it.owner)
-            TextComponent(MCTeam.decorateName(team, TextComponent(it.owner))).formattedText
+            val team = scoreboard.getPlayerTeam(it.owner)
+            TextComponent(MCTeam.formatNameForTeam(team, TextComponent(it.owner))).formattedText
         }
     }
 
@@ -197,14 +197,14 @@ object TabList {
     @JvmOverloads
     fun addName(name: TextComponent, useExistingSkin: Boolean = true) {
         val connection = Client.getConnection() ?: return
-        val listedPlayerListEntries = connection.listedPlayerListEntries
-        val playerListEntries = connection.asMixin<ClientPlayNetworkHandlerAccessor>().playerListEntries
+        val listedPlayerListEntries = connection.listedOnlinePlayers
+        val playerListEntries = connection.asMixin<ClientPacketListenerAccessor>().playerInfoMap
 
         val username = name.unformattedText
 
         val uuid = UUID.randomUUID()
-        val fakeEntry = PlayerListEntry(GameProfile(uuid, name.unformattedText), false)
-        fakeEntry.displayName = name
+        val fakeEntry = PlayerInfo(GameProfile(uuid, name.unformattedText), false)
+        fakeEntry.setTabListDisplayName(name)
 
         listedPlayerListEntries += fakeEntry
         playerListEntries[uuid] = fakeEntry
@@ -216,18 +216,18 @@ object TabList {
 
         val mc = Client.getMinecraft()
         // TODO: is it necessary to actually create a new one ?
-        val apiServices = mc.apiServices
+        val apiServices = mc.services()
 
         val findName = CompletableFuture.supplyAsync ({
-            apiServices.nameToIdCache.findByName(username)
-        }, Util.getMainWorkerExecutor().named("getProfile"))
+            apiServices.nameToIdCache.get(username)
+        }, Util.backgroundExecutor().forName("getProfile"))
 
         findName.thenAcceptAsync {
             if (!it.isPresent) return@thenAcceptAsync
 
             val result = apiServices.sessionService.fetchProfile(it.get().id, true) ?: return@thenAcceptAsync
-            val entry = PlayerListEntry(result.profile, true)
-            entry.displayName = name
+            val entry = PlayerInfo(result.profile, true)
+            entry.setTabListDisplayName(name)
 
             listedPlayerListEntries += entry
             playerListEntries[result.profile.id] = entry
@@ -271,7 +271,7 @@ object TabList {
         if (!customFooter)
             tabListFooter = null
 
-        val hud = toMC()?.asMixin<PlayerListHudAccessor>() ?: return
+        val hud = toMC()?.asMixin<PlayerTabOverlayAccessor>() ?: return
         val player = Player.toMC() ?: return
 
         if (!customHeader)
@@ -281,7 +281,7 @@ object TabList {
             tabListFooter = hud.footer?.let { TextComponent(it) }
 
         tabListNames = playerComparator
-            .sortedCopy(player.networkHandler.playerList)
+            .sortedCopy(player.connection.onlinePlayers)
             .mapTo(mutableListOf(), ::Name)
     }
 
@@ -297,10 +297,10 @@ object TabList {
         tabListFooter = null
     }
 
-    class Name(override val mcValue: PlayerListEntry) : CTWrapper<PlayerListEntry> {
+    class Name(override val mcValue: PlayerInfo) : CTWrapper<PlayerInfo> {
         private val latencyState = BasicState(mcValue.latency)
-        private val teamState = BasicState(mcValue.scoreboardTeam)
-        private val nameState = BasicState(mcValue.displayName)
+        private val teamState = BasicState(mcValue.team)
+        private val nameState = BasicState(mcValue.tabListDisplayName)
 
         /**
          * Gets the latency associated with this name
@@ -322,7 +322,7 @@ object TabList {
          */
         fun setLatency(latency: Int) = apply {
             latencyState.set(latency)
-            mcValue.asMixin<PlayerListEntryAccessor>().invokeSetLatency(latency)
+            mcValue.asMixin<PlayerInfoAccessor>().invokeSetLatency(latency)
         }
 
         /**
@@ -344,9 +344,9 @@ object TabList {
             val name = mcValue.profile.name
 
             if (team == null) {
-                scoreboard.clearTeam(name)
+                scoreboard.removePlayerFromTeam(name)
             } else {
-                scoreboard.addScoreHolderToTeam(name, team.toMC())
+                scoreboard.addPlayerToTeam(name, team.toMC())
             }
 
             teamState.set(team?.toMC())
@@ -361,7 +361,7 @@ object TabList {
             val name = mcValue.profile.name
 
             return TextComponent(
-                MCTeam.decorateName(
+                MCTeam.formatNameForTeam(
                     getTeam()?.mcValue,
                     TextComponent(nameState.get() ?: name),
                 )
@@ -376,7 +376,7 @@ object TabList {
          */
         fun setName(name: TextComponent?) = apply {
             nameState.set(name)
-            mcValue.displayName = name
+            mcValue.setTabListDisplayName(name)
         }
 
         /**
@@ -384,8 +384,8 @@ object TabList {
          */
         fun remove() {
             val connection = Client.getConnection() ?: return
-            val listedPlayerListEntries = connection.listedPlayerListEntries
-            val playerListEntries = connection.asMixin<ClientPlayNetworkHandlerAccessor>().playerListEntries
+            val listedPlayerListEntries = connection.listedOnlinePlayers
+            val playerListEntries = connection.asMixin<ClientPacketListenerAccessor>().playerInfoMap
 
             listedPlayerListEntries.remove(mcValue)
             playerListEntries.remove(mcValue.profile.id)
@@ -396,16 +396,16 @@ object TabList {
         override fun toString(): String = getName().formattedText
     }
 
-    internal class PlayerComparator internal constructor() : Comparator<PlayerListEntry> {
-        override fun compare(playerOne: PlayerListEntry, playerTwo: PlayerListEntry): Int {
-            val teamOne = playerOne.scoreboardTeam
-            val teamTwo = playerTwo.scoreboardTeam
+    internal class PlayerComparator internal constructor() : Comparator<PlayerInfo> {
+        override fun compare(playerOne: PlayerInfo, playerTwo: PlayerInfo): Int {
+            val teamOne = playerOne.team
+            val teamTwo = playerTwo.team
 
             return ComparisonChain
                 .start()
                 .compareTrueFirst(
-                    playerOne.gameMode != GameMode.SPECTATOR,
-                    playerTwo.gameMode != GameMode.SPECTATOR
+                    playerOne.gameMode != GameType.SPECTATOR,
+                    playerTwo.gameMode != GameType.SPECTATOR
                 )
                 .compare(teamOne?.name ?: "", teamTwo?.name ?: "")
                 .compare(playerOne.profile.name, playerTwo.profile.name)

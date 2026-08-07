@@ -5,19 +5,19 @@ import com.chattriggers.ctjs.api.inventory.action.DragAction
 import com.chattriggers.ctjs.api.inventory.action.DropAction
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.MCInventory
-import net.minecraft.client.gui.screen.ingame.HandledScreen
-import net.minecraft.util.Nameable
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
+import net.minecraft.world.Nameable
 
 class Inventory {
     val inventory: MCInventory?
-    val screen: HandledScreen<*>?
+    val screen: AbstractContainerScreen<*>?
 
     constructor(inventory: MCInventory) {
         this.inventory = inventory
         this.screen = null
     }
 
-    constructor(container: HandledScreen<*>) {
+    constructor(container: AbstractContainerScreen<*>) {
         this.inventory = null
         this.screen = container
     }
@@ -29,7 +29,7 @@ class Inventory {
      *
      * @return the size of the Inventory
      */
-    val size: Int get() = inventory?.size() ?: screen!!.screenHandler.slots.size
+    val size: Int get() = inventory?.containerSize ?: screen!!.menu.slots.size
 
     /**
      * Gets the item in any slot, starting from 0.
@@ -38,8 +38,8 @@ class Inventory {
      * @return the [Item] in that slot, or null if there is no item
      */
     fun getStackInSlot(slot: Int): Item? {
-        val stack = inventory?.getStack(slot)
-            ?: screen!!.screenHandler.getSlot(slot).stack
+        val stack = inventory?.getItem(slot)
+            ?: screen!!.menu.getSlot(slot).item
 
         return stack?.let(Item::fromMC)
     }
@@ -50,7 +50,7 @@ class Inventory {
      *
      * @return the window id
      */
-    fun getWindowId(): Int = screen?.screenHandler?.syncId ?: -1
+    fun getWindowId(): Int = screen?.menu?.containerId ?: -1
 
     /**
      * Checks if an item can be shift clicked into a certain slot, i.e. coal into the bottom of a furnace.
@@ -59,7 +59,7 @@ class Inventory {
      * @param item the item for checking
      * @return whether it can be shift clicked in
      */
-    fun isItemValidForSlot(slot: Int, item: Item) = inventory?.isValid(slot, item.mcValue) ?: true
+    fun isItemValidForSlot(slot: Int, item: Item) = inventory?.canPlaceItem(slot, item.mcValue) ?: true
 
     /**
      * @return a list of the [Item]s in an inventory

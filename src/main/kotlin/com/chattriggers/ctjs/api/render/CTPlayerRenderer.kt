@@ -1,25 +1,34 @@
 package com.chattriggers.ctjs.api.render
 
-import net.minecraft.client.network.AbstractClientPlayerEntity
-import net.minecraft.client.render.command.OrderedRenderCommandQueue
-import net.minecraft.client.render.entity.EntityRendererFactory
-import net.minecraft.client.render.entity.PlayerEntityRenderer
-import net.minecraft.client.render.entity.feature.*
-import net.minecraft.client.render.entity.model.EntityModelLayer
-import net.minecraft.client.render.entity.model.EntityModelLayers
-import net.minecraft.client.render.entity.model.EquipmentModelData
-import net.minecraft.client.render.entity.model.PlayerEntityModel
-import net.minecraft.client.render.entity.state.PlayerEntityRenderState
-import net.minecraft.client.render.state.CameraRenderState
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.player.AbstractClientPlayer
+import net.minecraft.client.renderer.SubmitNodeCollector
+import net.minecraft.client.renderer.entity.EntityRendererProvider
+import net.minecraft.client.renderer.entity.player.AvatarRenderer
+import net.minecraft.client.model.geom.ModelLayerLocation
+import net.minecraft.client.model.geom.ModelLayers
+import net.minecraft.client.renderer.entity.ArmorModelSet
+import net.minecraft.client.model.PlayerModel
+import net.minecraft.client.renderer.entity.state.AvatarRenderState
+import net.minecraft.client.renderer.state.CameraRenderState
+import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.renderer.entity.layers.ArrowLayer
+import net.minecraft.client.renderer.entity.layers.BeeStingerLayer
+import net.minecraft.client.renderer.entity.layers.CapeLayer
+import net.minecraft.client.renderer.entity.layers.CustomHeadLayer
+import net.minecraft.client.renderer.entity.layers.Deadmau5EarsLayer
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer
+import net.minecraft.client.renderer.entity.layers.ParrotOnShoulderLayer
+import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer
+import net.minecraft.client.renderer.entity.layers.SpinAttackEffectLayer
+import net.minecraft.client.renderer.entity.layers.WingsLayer
 
 internal class CTPlayerRenderer(
-    private val ctx: EntityRendererFactory.Context,
+    private val ctx: EntityRendererProvider.Context,
     private val slim: Boolean,
-) : PlayerEntityRenderer<AbstractClientPlayerEntity>(ctx, slim) {
-    private val PLAYER_SLIM: EquipmentModelData<EntityModelLayers>
+) : AvatarRenderer<AbstractClientPlayer>(ctx, slim) {
+    private val PLAYER_SLIM: ArmorModelSet<ModelLayers>
         @Suppress("UNCHECKED_CAST")
-        get() = EntityModelLayers::class.java.getField("PLAYER_SLIM").get(null) as EquipmentModelData<EntityModelLayers>
+        get() = ModelLayers::class.java.getField("PLAYER_SLIM").get(null) as ArmorModelSet<ModelLayers>
 
     var showArmor = true
         set(value) {
@@ -84,49 +93,49 @@ internal class CTPlayerRenderer(
         reset()
     }
 
-    override fun renderLabelIfPresent(
-        playerEntityRenderState: PlayerEntityRenderState?,
-        matrixStack: MatrixStack?,
-        orderedRenderCommandQueue: OrderedRenderCommandQueue?,
+    override fun submitNameTag(
+        playerEntityRenderState: AvatarRenderState?,
+        matrixStack: PoseStack?,
+        orderedRenderCommandQueue: SubmitNodeCollector?,
         cameraRenderState: CameraRenderState?
     ) {
         if (showNametag)
-            super.renderLabelIfPresent(playerEntityRenderState, matrixStack, orderedRenderCommandQueue, cameraRenderState)
+            super.submitNameTag(playerEntityRenderState, matrixStack, orderedRenderCommandQueue, cameraRenderState)
     }
 
     private fun reset() {
-        features.clear()
+        layers.clear()
 
-        val entityModels = ctx.blockRenderManager.models.modelManager.entityModelsSupplier.get()
+        val entityModels = ctx.blockRenderDispatcher.blockModelShaper.modelManager.entityModels().get()
 
         if (showArmor) {
-            val layer = if (slim) PLAYER_SLIM else EntityModelLayers.PLAYER_EQUIPMENT
-            addFeature(
-                ArmorFeatureRenderer(
+            val layer = if (slim) PLAYER_SLIM else ModelLayers.PLAYER_ARMOR
+            addLayer(
+                HumanoidArmorLayer(
                     this,
-                    EquipmentModelData.mapToEntityModel(
-                        layer as EquipmentModelData<EntityModelLayer>,
-                        ctx.entityModels
-                    ) { PlayerEntityModel(it, slim) },
+                    ArmorModelSet.bake(
+                        layer as ArmorModelSet<ModelLayerLocation>,
+                        ctx.modelSet
+                    ) { PlayerModel(it, slim) },
                     ctx.equipmentRenderer
                 )
             )
         }
         if (showHeldItem)
-            addFeature(PlayerHeldItemFeatureRenderer(this))
+            addLayer(PlayerItemInHandLayer(this))
         if (showArrows)
-            addFeature(StuckArrowsFeatureRenderer(this, ctx))
-        addFeature(Deadmau5FeatureRenderer(this, entityModels))
+            addLayer(ArrowLayer(this, ctx))
+        addLayer(Deadmau5EarsLayer(this, entityModels))
         if (showCape)
-            addFeature(CapeFeatureRenderer(this, entityModels, ctx.equipmentModelLoader))
+            addLayer(CapeLayer(this, entityModels, ctx.equipmentAssets))
         if (showArmor)
-            addFeature(HeadFeatureRenderer(this, entityModels, ctx.playerSkinCache))
+            addLayer(CustomHeadLayer(this, entityModels, ctx.playerSkinRenderCache))
         if (showElytra)
-            addFeature(ElytraFeatureRenderer(this, entityModels, ctx.equipmentRenderer))
+            addLayer(WingsLayer(this, entityModels, ctx.equipmentRenderer))
         if (showParrot)
-            addFeature(ShoulderParrotFeatureRenderer(this, entityModels))
-        addFeature(TridentRiptideFeatureRenderer(this, entityModels))
+            addLayer(ParrotOnShoulderLayer(this, entityModels))
+        addLayer(SpinAttackEffectLayer(this, entityModels))
         if (showStingers)
-            addFeature(StuckStingersFeatureRenderer(this, ctx))
+            addLayer(BeeStingerLayer(this, ctx))
     }
 }

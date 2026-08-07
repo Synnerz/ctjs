@@ -18,12 +18,12 @@ import gg.essential.elementa.dsl.component3
 import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.network.AbstractClientPlayerEntity
-import net.minecraft.client.render.VertexFormats
-import net.minecraft.client.render.entity.EntityRendererFactory
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.gui.Font
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.player.AbstractClientPlayer
+import com.mojang.blaze3d.vertex.DefaultVertexFormat
+import net.minecraft.client.renderer.entity.EntityRendererProvider
+import com.mojang.blaze3d.vertex.PoseStack
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.mozilla.javascript.NativeObject
@@ -126,19 +126,19 @@ object Renderer {
     }
 
     @JvmStatic
-    internal fun initializePlayerRenderers(context: EntityRendererFactory.Context) {
+    internal fun initializePlayerRenderers(context: EntityRendererProvider.Context) {
         normalCTRenderPlayer = CTPlayerRenderer(context, slim = false)
         slimCTRenderPlayer = CTPlayerRenderer(context, slim = true)
     }
 
     @JvmStatic
-    fun getFontRenderer() = Client.getMinecraft().textRenderer
+    fun getFontRenderer() = Client.getMinecraft().font
 
     @JvmStatic
-    fun getRenderManager() = Client.getMinecraft().worldRenderer
+    fun getRenderManager() = Client.getMinecraft().levelRenderer
 
     @JvmStatic
-    fun getStringWidth(text: String) = getFontRenderer().getWidth(ChatLib.addColor(text))
+    fun getStringWidth(text: String) = getFontRenderer().width(ChatLib.addColor(text))
 
     @JvmStatic
     @JvmOverloads
@@ -213,12 +213,12 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun bindTexture(texture: Image, textureIndex: Int = 0) = apply {
-        UGraphics.bindTexture(textureIndex, texture.getTexture()?.image?.imageId()?.toInt() ?: 0)
+        UGraphics.bindTexture(textureIndex, texture.getTexture()?.pixels?.pointer?.toInt() ?: 0)
     }
 
     @JvmStatic
     fun deleteTexture(texture: Image) = apply {
-        UGraphics.deleteTexture(texture.getTexture()?.image?.imageId()?.toInt() ?: 0)
+        UGraphics.deleteTexture(texture.getTexture()?.pixels?.pointer?.toInt() ?: 0)
     }
 
     @JvmStatic
@@ -312,7 +312,7 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun pos(x: Float, y: Float, z: Float = 0f) = apply {
-        val camera = Client.getMinecraft().gameRenderer.camera.pos
+        val camera = Client.getMinecraft().gameRenderer.mainCamera.position
         Renderer3d.pos(x + camera.x.toFloat(), y + camera.y.toFloat(), z + camera.z.toFloat())
     }
 
@@ -520,24 +520,24 @@ object Renderer {
         val fr = getFontRenderer()
         var newY = y
 
-        val immediate = Client.getMinecraft().bufferBuilders.entityVertexConsumers
+        val immediate = Client.getMinecraft().renderBuffers().bufferSource()
         splitText(text).lines.forEach {
-            fr.draw(
+            fr.drawInBatch(
                 it,
                 x,
                 newY,
                 color.toInt(),
                 shadow,
-                matrixStack.toMC().peek().positionMatrix,
+                matrixStack.toMC().last().pose(),
                 immediate,
-                TextRenderer.TextLayerType.NORMAL,
+                Font.DisplayMode.NORMAL,
                 0,
                 0xf000f0,
             )
 
-            newY += fr.fontHeight
+            newY += fr.lineHeight
         }
-        immediate.draw()
+        immediate.endBatch()
     }
 
     @JvmStatic
@@ -551,8 +551,8 @@ object Renderer {
         val lines = ChatLib.addColor(text).split(NEWLINE_REGEX)
         return TextLines(
             lines,
-            lines.maxOf { getFontRenderer().getWidth(it) }.toFloat(),
-            (getFontRenderer().fontHeight * lines.size + (lines.size - 1)).toFloat(),
+            lines.maxOf { getFontRenderer().width(it) }.toFloat(),
+            (getFontRenderer().lineHeight * lines.size + (lines.size - 1)).toFloat(),
         )
     }
 
@@ -563,7 +563,7 @@ object Renderer {
 
         scale(1f, 1f, 50f)
 
-        RenderSystem.setShaderTexture(0, image.getTexture()?.glTextureView)
+        RenderSystem.setShaderTexture(0, image.getTexture()?.textureView)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
         pos(x, y + height, 0f).tex(0f, 1f).color(colorized!!)
@@ -599,8 +599,8 @@ object Renderer {
     @JvmStatic
     fun drawPlayer(obj: NativeObject) {
         val entity = obj["player"].let {
-            it as? AbstractClientPlayerEntity
-                ?: ((it as? PlayerMP)?.toMC() as? AbstractClientPlayerEntity)
+            it as? AbstractClientPlayer
+                ?: ((it as? PlayerMP)?.toMC() as? AbstractClientPlayer)
                 ?: Player.toMC()
                 ?: return
         }
@@ -625,7 +625,7 @@ object Renderer {
 
         val (entityYaw, entityPitch) = if (rotate) {
             val mouseX = x - Client.getMouseX()
-            val mouseY = y - Client.getMouseY() - (entity.standingEyeHeight * size)
+            val mouseY = y - Client.getMouseY() - (entity.eyeHeight * size)
             atan((mouseX / 40.0f)).toFloat() to atan((mouseY / 40.0f)).toFloat()
         } else {
             val scaleFactor = 130f / 180f
@@ -637,17 +637,17 @@ object Renderer {
             Quaternionf().rotateX(entityPitch * 20.0f * (Math.PI / 180.0).toFloat())
         flipModelRotation.mul(pitchModelRotation)
 
-        val oldBodyYaw = entity.bodyYaw
-        val oldYaw = entity.yaw
-        val oldPitch = entity.pitch
-        val oldPrevHeadYaw = entity.lastHeadYaw
-        val oldHeadYaw = entity.headYaw
+        val oldBodyYaw = entity.yBodyRot
+        val oldYaw = entity.yRot
+        val oldPitch = entity.xRot
+        val oldPrevHeadYaw = entity.yHeadRotO
+        val oldHeadYaw = entity.yHeadRot
 
-        entity.bodyYaw = 180.0f + entityYaw * 20.0f
-        entity.yaw = 180.0f + entityYaw * 40.0f
-        entity.pitch = -entityPitch * 20.0f
-        entity.headYaw = entity.yaw
-        entity.lastHeadYaw = entity.yaw
+        entity.yBodyRot = 180.0f + entityYaw * 20.0f
+        entity.setYRot(180.0f + entityYaw * 40.0f)
+        entity.setXRot(-entityPitch * 20.0f)
+        entity.yHeadRot = entity.yRot
+        entity.yHeadRotO = entity.yRot
 
         matrixStack.push()
         matrixStack.translate(0.0, 0.0, 1000.0)
@@ -671,11 +671,11 @@ object Renderer {
 
         if (pitchModelRotation != null) {
             pitchModelRotation.conjugate()
-            entityRenderDispatcher.camera?.rotation?.set(pitchModelRotation)
+            entityRenderDispatcher.camera?.rotation()?.set(pitchModelRotation)
         }
 
         // entityRenderDispatcher.setRenderShadows(false)
-        val vertexConsumers = Client.getMinecraft().bufferBuilders.entityVertexConsumers
+        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
 
         // val light = 0xf000f0
 
@@ -692,44 +692,44 @@ object Renderer {
         )
 
         val playerEntityRenderState = entityRenderer.createRenderState().apply {
-            this.baseScale = size.toFloat()
-            this.bodyYaw = entity.bodyYaw
-            this.relativeHeadYaw = entity.yaw
+            this.scale = size.toFloat()
+            this.bodyRot = entity.yBodyRot
+            this.yRot = entity.yRot
         }
 
-        val vec3d = entityRenderer.getPositionOffset(playerEntityRenderState)
-        val d = vec3d.getX()
-        val e = vec3d.getY()
-        val f = vec3d.getZ()
+        val vec3d = entityRenderer.getRenderOffset(playerEntityRenderState)
+        val d = vec3d.x()
+        val e = vec3d.y()
+        val f = vec3d.z()
         matrixStack.push()
         matrixStack.translate(d, e, f)
 
-        entityRenderer.render(
+        entityRenderer.submit(
             playerEntityRenderState,
             matrixStack.toMC(),
-            Client.getMinecraft().gameRenderer.entityRenderCommandQueue,
-            Client.getMinecraft().gameRenderer.entityRenderStates.cameraRenderState
+            Client.getMinecraft().gameRenderer.submitNodeStorage,
+            Client.getMinecraft().gameRenderer.levelRenderState.cameraRenderState
         )
 
         matrixStack.pop()
 
-        vertexConsumers.draw()
+        vertexConsumers.endBatch()
         // entityRenderDispatcher.setRenderShadows(true)
         matrixStack.pop()
         // TODO: find out a way to get Diffuse instance and call setType
         // DiffuseLighting.enableGuiDepthLighting()
         matrixStack.pop()
 
-        entity.bodyYaw = oldBodyYaw
-        entity.yaw = oldYaw
-        entity.pitch = oldPitch
-        entity.lastHeadYaw = oldPrevHeadYaw
-        entity.headYaw = oldHeadYaw
+        entity.yBodyRot = oldBodyYaw
+        entity.setYRot(oldYaw)
+        entity.setXRot(oldPitch)
+        entity.yHeadRotO = oldPrevHeadYaw
+        entity.yHeadRot = oldHeadYaw
 
         matrixStack.pop()
     }
 
-    internal fun withMatrix(stack: MatrixStack?, partialTicks: Float = Renderer.partialTicks, block: () -> Unit) {
+    internal fun withMatrix(stack: PoseStack?, partialTicks: Float = Renderer.partialTicks, block: () -> Unit) {
         Renderer.partialTicks = partialTicks
         matrixPushCounter = 0
 
@@ -767,15 +767,15 @@ object Renderer {
     }
 
     enum class VertexFormat(private val mcValue: MCVertexFormat) {
-        LINES(VertexFormats.POSITION_COLOR_NORMAL),
-        POSITION(VertexFormats.POSITION),
-        POSITION_COLOR(VertexFormats.POSITION_COLOR),
-        POSITION_TEXTURE(VertexFormats.POSITION_TEXTURE),
-        POSITION_TEXTURE_COLOR(VertexFormats.POSITION_TEXTURE_COLOR),
-        POSITION_COLOR_TEXTURE_LIGHT(VertexFormats.POSITION_COLOR_TEXTURE_LIGHT),
-        POSITION_TEXTURE_LIGHT_COLOR(VertexFormats.POSITION_TEXTURE_LIGHT_COLOR),
-        POSITION_TEXTURE_COLOR_LIGHT(VertexFormats.POSITION_TEXTURE_COLOR_LIGHT),
-        POSITION_TEXTURE_COLOR_NORMAL(VertexFormats.POSITION_TEXTURE_COLOR_NORMAL);
+        LINES(DefaultVertexFormat.POSITION_COLOR_NORMAL),
+        POSITION(DefaultVertexFormat.POSITION),
+        POSITION_COLOR(DefaultVertexFormat.POSITION_COLOR),
+        POSITION_TEXTURE(DefaultVertexFormat.POSITION_TEX),
+        POSITION_TEXTURE_COLOR(DefaultVertexFormat.POSITION_TEX_COLOR),
+        POSITION_COLOR_TEXTURE_LIGHT(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP),
+        POSITION_TEXTURE_LIGHT_COLOR(DefaultVertexFormat.POSITION_TEX_LIGHTMAP_COLOR),
+        POSITION_TEXTURE_COLOR_LIGHT(DefaultVertexFormat.PARTICLE),
+        POSITION_TEXTURE_COLOR_NORMAL(DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
 
         fun toMC() = mcValue
 
@@ -788,25 +788,25 @@ object Renderer {
     enum class RenderSnippet(val mcSnippet: Snippet) {
         TERRAIN_SNIPPET(RenderPipelines.TERRAIN_SNIPPET),
         ENTITY_SNIPPET(RenderPipelines.ENTITY_SNIPPET),
-        RENDERTYPE_BEACON_BEAM_SNIPPET(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET),
+        RENDERTYPE_BEACON_BEAM_SNIPPET(RenderPipelines.BEACON_BEAM_SNIPPET),
         TEXT_SNIPPET(RenderPipelines.TEXT_SNIPPET),
-        RENDERTYPE_END_PORTAL_SNIPPET(RenderPipelines.RENDERTYPE_END_PORTAL_SNIPPET),
-        RENDERTYPE_CLOUDS_SNIPPET(RenderPipelines.RENDERTYPE_CLOUDS_SNIPPET),
-        RENDERTYPE_LINES_SNIPPET(RenderPipelines.RENDERTYPE_LINES_SNIPPET),
-        POSITION_COLOR_SNIPPET(RenderPipelines.POSITION_COLOR_SNIPPET),
+        RENDERTYPE_END_PORTAL_SNIPPET(RenderPipelines.END_PORTAL_SNIPPET),
+        RENDERTYPE_CLOUDS_SNIPPET(RenderPipelines.CLOUDS_SNIPPET),
+        RENDERTYPE_LINES_SNIPPET(RenderPipelines.LINES_SNIPPET),
+        POSITION_COLOR_SNIPPET(RenderPipelines.DEBUG_FILLED_SNIPPET),
         PARTICLE_SNIPPET(RenderPipelines.PARTICLE_SNIPPET),
         WEATHER_SNIPPET(RenderPipelines.WEATHER_SNIPPET),
         GUI_SNIPPET(RenderPipelines.GUI_SNIPPET),
-        POSITION_TEX_COLOR_SNIPPET(RenderPipelines.POSITION_TEX_COLOR_SNIPPET),
-        RENDERTYPE_OUTLINE_SNIPPET(RenderPipelines.RENDERTYPE_OUTLINE_SNIPPET),
-        POST_EFFECT_PROCESSOR_SNIPPET(RenderPipelines.POST_EFFECT_PROCESSOR_SNIPPET),
+        POSITION_TEX_COLOR_SNIPPET(RenderPipelines.GUI_TEXTURED_SNIPPET),
+        RENDERTYPE_OUTLINE_SNIPPET(RenderPipelines.OUTLINE_SNIPPET),
+        POST_EFFECT_PROCESSOR_SNIPPET(RenderPipelines.POST_PROCESSING_SNIPPET),
     }
 
     class ScreenWrapper {
-        fun getWidth(): Int = Client.getMinecraft().window.scaledWidth
+        fun getWidth(): Int = Client.getMinecraft().window.guiScaledWidth
 
-        fun getHeight(): Int = Client.getMinecraft().window.scaledHeight
+        fun getHeight(): Int = Client.getMinecraft().window.guiScaledHeight
 
-        fun getScale(): Double = Client.getMinecraft().window.scaleFactor.toDouble()
+        fun getScale(): Double = Client.getMinecraft().window.guiScale.toDouble()
     }
 }

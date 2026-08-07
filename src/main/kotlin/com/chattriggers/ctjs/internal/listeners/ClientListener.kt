@@ -26,8 +26,8 @@ import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents
 import net.fabricmc.fabric.api.event.player.*
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
 import org.lwjgl.glfw.GLFW
 import org.mozilla.javascript.Context
 
@@ -62,7 +62,7 @@ object ClientListener : Initializer {
                 }
             }
 
-            if (World.isLoaded() && World.toMC()?.tickManager?.shouldTick() == true) {
+            if (World.isLoaded() && World.toMC()?.tickRateManager()?.runsNormally() == true) {
                 TriggerType.TICK.triggerAll(ticksPassed)
                 ticksPassed++
 
@@ -88,14 +88,14 @@ object ClientListener : Initializer {
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             // TODO: Why does Renderer.drawString not work in here?
             ScreenEvents.beforeRender(screen).register { _, ctx, mouseX, mouseY, partialTicks ->
-                Renderer.withMatrix(UMatrixStack(ctx.matrices).toMC(), partialTicks) {
+                Renderer.withMatrix(UMatrixStack(ctx.pose()).toMC(), partialTicks) {
                     TriggerType.GUI_RENDER.triggerAll(ctx, mouseX, mouseY, screen)
                 }
             }
 
             // TODO: Why does Renderer.drawString not work in here?
             ScreenEvents.afterRender(screen).register { _, ctx, mouseX, mouseY, partialTicks ->
-                Renderer.withMatrix(UMatrixStack(ctx.matrices).toMC(), partialTicks) {
+                Renderer.withMatrix(UMatrixStack(ctx.pose()).toMC(), partialTicks) {
                     TriggerType.POST_GUI_RENDER.triggerAll(ctx, mouseX, mouseY, screen, partialTicks)
                 }
             }
@@ -142,7 +142,7 @@ object ClientListener : Initializer {
         }
 
         AttackBlockCallback.EVENT.register { player, _, _, pos, direction ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -151,11 +151,11 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         AttackEntityCallback.EVENT.register { player, _, _, entity, _ ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -164,7 +164,7 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         CTEvents.BREAK_BLOCK.register { pos ->
@@ -177,20 +177,20 @@ object ClientListener : Initializer {
         }
 
         UseBlockCallback.EVENT.register { player, _, hand, hitResult ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
                 PlayerInteraction.UseBlock(hand),
-                World.getBlockAt(BlockPos(hitResult.blockPos)).withFace(BlockFace.fromMC(hitResult.side)),
+                World.getBlockAt(BlockPos(hitResult.blockPos)).withFace(BlockFace.fromMC(hitResult.direction)),
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         UseEntityCallback.EVENT.register { player, _, hand, entity, _ ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
             TriggerType.PLAYER_INTERACT.triggerAll(
@@ -199,14 +199,14 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
 
         UseItemCallback.EVENT.register { player, _, hand ->
-            if (!player.entityWorld.isClient) return@register ActionResult.PASS
+            if (!player.level().isClientSide) return@register InteractionResult.PASS
             val event = CancellableEvent()
 
-            val stack = player.getStackInHand(hand)
+            val stack = player.getItemInHand(hand)
 
             TriggerType.PLAYER_INTERACT.triggerAll(
                 PlayerInteraction.UseItem(hand),
@@ -214,7 +214,7 @@ object ClientListener : Initializer {
                 event,
             )
 
-            if (event.isCancelled()) ActionResult.FAIL else ActionResult.PASS
+            if (event.isCancelled()) InteractionResult.FAIL else InteractionResult.PASS
         }
     }
 
@@ -224,7 +224,7 @@ object ClientListener : Initializer {
         }
     }
 
-    private fun handleChatMessage(message: Text, actionBar: Boolean): Boolean {
+    private fun handleChatMessage(message: Component, actionBar: Boolean): Boolean {
         val textComponent = TextComponent(message)
         val event = ChatTrigger.Event(textComponent)
 

@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.api.inventory.nbt
 
 import com.chattriggers.ctjs.MCNbtBase
 import com.chattriggers.ctjs.MCNbtList
-import net.minecraft.nbt.NbtElement
+import net.minecraft.nbt.Tag
 import org.mozilla.javascript.NativeArray
 
 class NBTTagList(override val mcValue: MCNbtList) : NBTBase(mcValue) {
@@ -47,18 +47,18 @@ class NBTTagList(override val mcValue: MCNbtList) : NBTBase(mcValue) {
 
     fun getLongArrayAt(index: Int): LongArray = mcValue.getLongArray(index).get()
 
-    operator fun get(index: Int): NbtElement = mcValue[index]
+    operator fun get(index: Int): Tag = mcValue[index]
 
     fun get(index: Int, type: Byte): Any = when (type) {
-        NbtElement.SHORT_TYPE -> getShortAt(index)
-        NbtElement.INT_TYPE -> getIntAt(index)
-        NbtElement.FLOAT_TYPE -> getFloatAt(index)
-        NbtElement.DOUBLE_TYPE -> getDoubleAt(index)
-        NbtElement.STRING_TYPE -> getStringTagAt(index)
-        NbtElement.LIST_TYPE -> getListAt(index)
-        NbtElement.COMPOUND_TYPE -> getCompoundTagAt(index)
-        NbtElement.INT_ARRAY_TYPE -> getIntArrayAt(index)
-        NbtElement.LONG_ARRAY_TYPE -> getLongArrayAt(index)
+        Tag.TAG_SHORT -> getShortAt(index)
+        Tag.TAG_INT -> getIntAt(index)
+        Tag.TAG_FLOAT -> getFloatAt(index)
+        Tag.TAG_DOUBLE -> getDoubleAt(index)
+        Tag.TAG_STRING -> getStringTagAt(index)
+        Tag.TAG_LIST -> getListAt(index)
+        Tag.TAG_COMPOUND -> getCompoundTagAt(index)
+        Tag.TAG_INT_ARRAY -> getIntArrayAt(index)
+        Tag.TAG_LONG_ARRAY -> getLongArrayAt(index)
         else -> get(index)
     }
 

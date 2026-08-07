@@ -2,8 +2,8 @@ package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.utils.getOption
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.text.Style
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.network.chat.Style
 import org.mozilla.javascript.NativeObject
 
 class Text {
@@ -147,14 +147,14 @@ class Text {
     }
 
     @JvmOverloads
-    fun draw(ctx: DrawContext, x: Int? = null, y: Int? = null) = apply {
+    fun draw(ctx: GuiGraphics, x: Int? = null, y: Int? = null) = apply {
         draw(ctx, x, y, null, null)
     }
 
-    internal fun draw(ctx: DrawContext, x: Int? = null, y: Int? = null, backgroundX: Int? = null, backgroundWidth: Int? = null) =
+    internal fun draw(ctx: GuiGraphics, x: Int? = null, y: Int? = null, backgroundX: Int? = null, backgroundWidth: Int? = null) =
         apply {
-            ctx.matrices.pushMatrix()
-            ctx.matrices.scale(scale, scale)
+            ctx.pose().pushMatrix()
+            ctx.pose().scale(scale, scale)
 
             var longestLine = lines.maxOf { Renderer.getStringWidth(it) * scale }
             if (maxWidth != 0)
@@ -183,10 +183,10 @@ class Text {
 
             for (i in 0 until maxLines) {
                 if (i >= lines.size) break
-                ctx.drawText(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
+                ctx.drawString(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
                 yHolder += 10
             }
-            ctx.matrices.popMatrix()
+            ctx.pose().popMatrix()
         }
 
     private fun updateFormatting() {
@@ -199,7 +199,7 @@ class Text {
         string.split("\n").forEach { line ->
             if (maxWidth > 0) {
                 lines.addAll(
-                    Renderer.getFontRenderer().textHandler.wrapLines(line, maxWidth, Style.EMPTY).map { it.string }
+                    Renderer.getFontRenderer().splitter.splitLines(line, maxWidth, Style.EMPTY).map { it.string }
                 )
             } else {
                 lines.add(line)

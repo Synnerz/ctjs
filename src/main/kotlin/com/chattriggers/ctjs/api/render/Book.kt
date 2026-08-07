@@ -2,13 +2,13 @@ package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.TextComponent
-import com.chattriggers.ctjs.internal.mixins.BookScreenAccessor
+import com.chattriggers.ctjs.internal.mixins.BookViewScreenAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
-import net.minecraft.client.gui.screen.ingame.BookScreen
+import net.minecraft.client.gui.screens.inventory.BookViewScreen
 
 class Book {
-    private var screen: BookScreen? = null
-    private val customContents = BookScreen.Contents(emptyList())
+    private var screen: BookViewScreen? = null
+    private val customContents = BookViewScreen.BookAccess(emptyList())
 
     /**
      * Add a page to the book.
@@ -43,7 +43,7 @@ class Book {
         }
 
         customContents.pages.add(pageIndex, message)
-        screen?.asMixin<BookScreenAccessor>()?.invokeUpdatePageButtons()
+        screen?.asMixin<BookViewScreenAccessor>()?.invokeUpdateButtonVisibility()
     }
 
     fun insertPage(pageIndex: Int, message: String) = insertPage(pageIndex, TextComponent(message))
@@ -61,14 +61,14 @@ class Book {
         }
 
         customContents.pages[pageIndex] = message
-        screen?.asMixin<BookScreenAccessor>()?.invokeUpdatePageButtons()
+        screen?.asMixin<BookViewScreenAccessor>()?.invokeUpdateButtonVisibility()
     }
 
     fun setPage(pageIndex: Int, message: String) = setPage(pageIndex, TextComponent(message))
 
     @JvmOverloads
     fun display(pageIndex: Int = 0) {
-        screen = BookScreen(customContents)
+        screen = BookViewScreen(customContents)
         Client.scheduleTask {
             Client.getMinecraft().setScreen(screen)
             screen!!.setPage(pageIndex)
@@ -80,6 +80,6 @@ class Book {
     }
 
     fun getCurrentPage(): Int {
-        return if (!isOpen() || screen == null) -1 else screen!!.asMixin<BookScreenAccessor>().pageIndex
+        return if (!isOpen() || screen == null) -1 else screen!!.asMixin<BookViewScreenAccessor>().currentPage
     }
 }

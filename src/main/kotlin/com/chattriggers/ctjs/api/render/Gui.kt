@@ -4,14 +4,14 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.triggers.RegularTrigger
 import com.chattriggers.ctjs.api.triggers.TriggerType
-import com.chattriggers.ctjs.internal.mixins.ClickableWidgetAccessor
+import com.chattriggers.ctjs.internal.mixins.AbstractWidgetAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import gg.essential.universal.UKeyboard
 import gg.essential.universal.UMatrixStack
 import gg.essential.universal.UScreen
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.components.Button
 
 class Gui @JvmOverloads constructor(
     title: TextComponent = TextComponent(""),
@@ -29,7 +29,7 @@ class Gui @JvmOverloads constructor(
     private var mouseX = 0
     private var mouseY = 0
 
-    private val buttons = mutableMapOf<Int, ButtonWidget>()
+    private val buttons = mutableMapOf<Int, Button>()
     private var nextButtonId = 0
     private var doesPauseGame = false
 
@@ -37,12 +37,12 @@ class Gui @JvmOverloads constructor(
         Client.currentGui.set(this)
     }
 
-    override fun close() {
+    override fun onClose() {
         Client.currentGui.set(null)
 
     }
 
-    fun isOpen(): Boolean = Client.getMinecraft().currentScreen === this
+    fun isOpen(): Boolean = Client.getMinecraft().screen === this
 
     /**
      * Registers a method to be run while gui is open.
@@ -221,7 +221,7 @@ class Gui @JvmOverloads constructor(
             false
         }
 
-        buttons.values.forEach(::addDrawableChild)
+        buttons.values.forEach(::addRenderableWidget)
         onOpened?.trigger(arrayOf(this))
     }
 
@@ -276,8 +276,8 @@ class Gui @JvmOverloads constructor(
         super.onDrawScreen(matrixStack, mouseX, mouseY, partialTicks)
 
         @Suppress("UNCHECKED_CAST")
-        val drawContexts = drawContextsField.get(this) as List<DrawContext>
-        Renderer.pushMatrix(UMatrixStack(drawContexts.last().matrices))
+        val drawContexts = drawContextsField.get(this) as List<GuiGraphics>
+        Renderer.pushMatrix(UMatrixStack(drawContexts.last().pose()))
 
         Renderer.partialTicks = partialTicks
 
@@ -306,7 +306,7 @@ class Gui @JvmOverloads constructor(
      * Internal method to run trigger. Not meant for public use
      */
 
-    override fun shouldPause() = doesPauseGame
+    override fun isPauseScreen() = doesPauseGame
 
     fun setDoesPauseGame(doesPauseGame: Boolean) = apply { this.doesPauseGame = doesPauseGame }
 
@@ -316,10 +316,10 @@ class Gui @JvmOverloads constructor(
      * @param button the button to add
      * @return the button ID for use in actionPerformed
      */
-    fun addButton(button: ButtonWidget): Int {
+    fun addButton(button: Button): Int {
         val id = nextButtonId++
         buttons[id] = button
-        addDrawableChild(button)
+        addRenderableWidget(button)
         return id
     }
 
@@ -342,11 +342,11 @@ class Gui @JvmOverloads constructor(
         buttonText: TextComponent,
     ): Int {
         val id = nextButtonId++
-        val button = ButtonWidget.builder(buttonText) {
+        val button = Button.builder(buttonText) {
             onActionPerformed?.trigger(arrayOf(id))
-        }.dimensions(x, y, width, height).build()
+        }.bounds(x, y, width, height).build()
         buttons[id] = button
-        addDrawableChild(button)
+        addRenderableWidget(button)
         return id
     }
 
@@ -360,12 +360,12 @@ class Gui @JvmOverloads constructor(
      * @return the Gui for method chaining
      */
     fun removeButton(buttonId: Int) = apply {
-        remove(buttons[buttonId] ?: return@apply)
+        removeWidget(buttons[buttonId] ?: return@apply)
         buttons.remove(buttonId)
     }
 
     fun clearButtons() = apply {
-        buttons.values.forEach(::remove)
+        buttons.values.forEach(::removeWidget)
         buttons.clear()
     }
 
@@ -418,7 +418,7 @@ class Gui @JvmOverloads constructor(
      * @return the Gui for method chaining
      */
     fun setButtonHeight(buttonId: Int, height: Int) = apply {
-        buttons[buttonId]?.asMixin<ClickableWidgetAccessor>()?.setHeight(height)
+        buttons[buttonId]?.asMixin<AbstractWidgetAccessor>()?.setHeight(height)
     }
 
     fun getButtonX(buttonId: Int): Int = buttons[buttonId]?.x ?: 0

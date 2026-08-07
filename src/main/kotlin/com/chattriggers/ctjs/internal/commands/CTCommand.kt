@@ -28,10 +28,10 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.argument
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
-import net.minecraft.command.CommandSource
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Text
+import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Component
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.CompletableFuture
@@ -180,7 +180,7 @@ internal object CTCommand : Initializer {
 
         for (i in 0 until toDump) {
             val msg = ChatLib.replaceFormatting(messages[messages.size - toDump + i].formattedText)
-            TextComponent(Text.literal(msg).styled {
+            TextComponent(Component.literal(msg).withStyle {
                 it.withClickEvent(ClickEvent.CopyToClipboard(msg))
                     .withHoverEvent(
                         HoverEvent.ShowText(TextComponent("&eClick here to copy this message."))
@@ -269,7 +269,7 @@ internal object CTCommand : Initializer {
 
             return modules.find {
                 it.equals(string, ignoreCase = true)
-            } ?: throw SimpleCommandExceptionType(Text.literal("No modules found with name \"$string\""))
+            } ?: throw SimpleCommandExceptionType(Component.literal("No modules found with name \"$string\""))
                 .createWithContext(reader)
         }
 
@@ -277,7 +277,7 @@ internal object CTCommand : Initializer {
             context: CommandContext<S>?,
             builder: SuggestionsBuilder?
         ): CompletableFuture<Suggestions> {
-            return CommandSource.suggestMatching(ModuleManager.cachedModules.map { it.name }, builder)
+            return SharedSuggestionProvider.suggest(ModuleManager.cachedModules.map { it.name }, builder)
         }
 
         fun getModule(ctx: CommandContext<FabricClientCommandSource>, module: String): String {

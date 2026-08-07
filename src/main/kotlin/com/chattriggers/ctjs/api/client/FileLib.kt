@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.CTJS
-import net.minecraft.util.Util
+import net.minecraft.Util
 import java.io.*
 import java.net.UnknownHostException
 import java.nio.charset.Charset
@@ -299,7 +299,7 @@ object FileLib {
      */
     @JvmStatic
     fun open(url: String) {
-        Util.getOperatingSystem().open(url)
+        Util.getPlatform().openUri(url)
     }
 
     /**
@@ -309,6 +309,6 @@ object FileLib {
      */
     @JvmStatic
     fun open(path: File) {
-        Util.getOperatingSystem().open(path)
+        Util.getPlatform().openFile(path)
     }
 }

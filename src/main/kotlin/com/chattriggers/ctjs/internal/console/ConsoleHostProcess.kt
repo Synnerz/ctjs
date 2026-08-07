@@ -9,10 +9,10 @@ import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
-import net.minecraft.client.option.KeyBinding
-import net.minecraft.client.util.InputUtil
-import net.minecraft.util.Identifier
-import net.minecraft.util.Util
+import net.minecraft.client.KeyMapping
+import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.Util
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
 import java.io.BufferedReader
@@ -60,16 +60,16 @@ object ConsoleHostProcess : Initializer {
 
     override fun init() {
         val keybind = KeyBindingHelper.registerKeyBinding(
-            KeyBinding(
+            KeyMapping(
                 "ctjs.key.binding.console",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_GRAVE_ACCENT,
-                KeyBinding.Category.create(Identifier.of("ctjs.key.category")),
+                KeyMapping.Category.register(ResourceLocation.parse("ctjs.key.category")),
             )
         )
 
         CTEvents.RENDER_GAME.register {
-            if (keybind.wasPressed())
+            if (keybind.consumeClick())
                 show()
         }
     }
@@ -81,7 +81,7 @@ object ConsoleHostProcess : Initializer {
 
         val urlObjects = (Thread.currentThread().contextClassLoader.parent as URLClassLoader).urLs
         val urls = urlObjects.joinToString(File.pathSeparator) {
-            val str = if (Util.getOperatingSystem().equals(Util.OperatingSystem.WINDOWS)) it.toString().replace("file:/", "") else it.toString()
+            val str = if (Util.getPlatform().equals(Util.OS.WINDOWS)) it.toString().replace("file:/", "") else it.toString()
             URLDecoder.decode(str, Charset.defaultCharset())
         }
 

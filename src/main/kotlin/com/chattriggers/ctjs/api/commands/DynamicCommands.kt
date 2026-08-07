@@ -23,6 +23,7 @@ import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.mixins.commands.EntitySelectorAccessor
 import com.chattriggers.ctjs.MCEntity
 import com.chattriggers.ctjs.MCNbtCompound
+import com.chattriggers.ctjs.MCPlayer
 import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.utils.asMixin
@@ -35,21 +36,45 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import com.mojang.brigadier.tree.CommandNode
-import net.minecraft.block.pattern.CachedBlockPosition
-import net.minecraft.command.CommandSource
-import net.minecraft.command.EntitySelector
-import net.minecraft.command.argument.*
-import net.minecraft.command.argument.AngleArgumentType.Angle
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.registry.BuiltinRegistries
-import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.CommandOutput
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.text.Text
-import net.minecraft.util.math.Box
-import net.minecraft.util.math.Vec2f
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.level.block.state.pattern.BlockInWorld
+import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.commands.arguments.selector.EntitySelector
+import net.minecraft.commands.arguments.AngleArgument.SingleAngle
+import net.minecraft.world.item.ItemStack
+import net.minecraft.data.registries.VanillaRegistries
+import net.minecraft.commands.Commands
+import net.minecraft.commands.CommandSource
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.commands.arguments.AngleArgument
+import net.minecraft.commands.arguments.ColorArgument
+import net.minecraft.commands.arguments.CompoundTagArgument
+import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.commands.arguments.GameModeArgument
+import net.minecraft.commands.arguments.MessageArgument
+import net.minecraft.commands.arguments.NbtPathArgument
+import net.minecraft.commands.arguments.NbtTagArgument
+import net.minecraft.commands.arguments.RangeArgument
+import net.minecraft.commands.arguments.ResourceLocationArgument
+import net.minecraft.commands.arguments.SlotArgument
+import net.minecraft.commands.arguments.TimeArgument
+import net.minecraft.commands.arguments.UuidArgument
+import net.minecraft.commands.arguments.blocks.BlockInput
+import net.minecraft.commands.arguments.blocks.BlockPredicateArgument
+import net.minecraft.commands.arguments.blocks.BlockStateArgument
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument
+import net.minecraft.commands.arguments.coordinates.ColumnPosArgument
+import net.minecraft.commands.arguments.coordinates.Coordinates
+import net.minecraft.commands.arguments.coordinates.RotationArgument
+import net.minecraft.commands.arguments.coordinates.SwizzleArgument
+import net.minecraft.commands.arguments.coordinates.Vec2Argument
+import net.minecraft.commands.arguments.coordinates.Vec3Argument
+import net.minecraft.commands.arguments.item.ItemArgument
+import net.minecraft.commands.arguments.item.ItemInput
+import net.minecraft.commands.arguments.item.ItemPredicateArgument
+import net.minecraft.network.chat.Component
+import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.Vec2
+import net.minecraft.world.phys.Vec3
 import org.mozilla.javascript.Function
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.WrappedException
@@ -214,7 +239,7 @@ object DynamicCommands : CommandCollection() {
     }
 
     @JvmStatic
-    fun redirect(node: CommandNode<CommandSource>) {
+    fun redirect(node: CommandNode<SharedSuggestionProvider>) {
         requireNotNull(currentNode) { "Call to Commands.redirect() outside of Commands.buildCommand()" }
         require(!currentNode!!.hasRedirect) { "Duplicate call to Commands.redirect()" }
         currentNode!!.children.add(DynamicCommand.Node.RedirectToCommandNode(currentNode, node))
@@ -237,7 +262,7 @@ object DynamicCommands : CommandCollection() {
      * to, for example, redirect to just `/advancement` instead of `/`.
      */
     @JvmStatic
-    fun getDispatcherRoot() = Client.getConnection()?.commandDispatcher?.root
+    fun getDispatcherRoot() = Client.getConnection()?.commands?.root
 
     /////////////////////////
     // Brigadier Arg Types //
@@ -307,14 +332,14 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:angle">minecraft:angle</a>
      */
     @JvmStatic
-    fun angle() = wrapArgument(AngleArgumentType.angle(), ::AngleArgumentWrapper)
+    fun angle() = wrapArgument(AngleArgument.angle(), ::AngleArgumentWrapper)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:block_pos">minecraft:block_pos</a>
      */
     @JvmStatic
-    fun blockPos(): ArgumentType<PosArgument> {
-        return wrapArgument(BlockPosArgumentType.blockPos(), ::PosArgumentWrapper)
+    fun blockPos(): ArgumentType<Coordinates> {
+        return wrapArgument(BlockPosArgument.blockPos(), ::PosArgumentWrapper)
     }
 
     /**
@@ -322,8 +347,8 @@ object DynamicCommands : CommandCollection() {
      */
     @JvmStatic
     fun blockPredicate(): ArgumentType<BlockPredicateWrapper> {
-        val registryAccess = CommandManager.createRegistryAccess(BuiltinRegistries.createWrapperLookup())
-        val predicate = BlockPredicateArgumentType.blockPredicate(registryAccess)
+        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val predicate = BlockPredicateArgument.blockPredicate(registryAccess)
         return wrapArgument(predicate, ::BlockPredicateWrapper)
     }
 
@@ -332,8 +357,8 @@ object DynamicCommands : CommandCollection() {
      */
     @JvmStatic
     fun blockState(): ArgumentType<BlockStateArgumentWrapper> {
-        val registryAccess = CommandManager.createRegistryAccess(BuiltinRegistries.createWrapperLookup())
-        val predicate = BlockStateArgumentType.blockState(registryAccess)
+        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val predicate = BlockStateArgument.block(registryAccess)
         return wrapArgument(predicate, ::BlockStateArgumentWrapper)
     }
 
@@ -341,13 +366,13 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
      */
     @JvmStatic
-    fun color() = ColorArgumentType.color()
+    fun color() = ColorArgument.color()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>
      */
     @JvmStatic
-    fun columnPos() = wrapArgument(ColumnPosArgumentType.columnPos(), ::PosArgumentWrapper)
+    fun columnPos() = wrapArgument(ColumnPosArgument.columnPos(), ::PosArgumentWrapper)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:dimension">minecraft:dimension</a>
@@ -361,26 +386,26 @@ object DynamicCommands : CommandCollection() {
             "minecraft:overworld_caves",
         )
     ) { name ->
-        Entity.DimensionType.entries.first { it.toMC().value.toString() == name }
+        Entity.DimensionType.entries.first { it.toMC().location().toString() == name }
     }
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
      */
     @JvmStatic
-    fun entity() = wrapArgument(EntityArgumentType.entity()) { EntitySelectorWrapper(it).getEntity() }
+    fun entity() = wrapArgument(EntityArgument.entity()) { EntitySelectorWrapper(it).getEntity() }
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:entity">minecraft:entity</a>
      */
     @JvmStatic
-    fun entities() = wrapArgument(EntityArgumentType.entities()) { EntitySelectorWrapper(it).getEntities() }
+    fun entities() = wrapArgument(EntityArgument.entities()) { EntitySelectorWrapper(it).getEntities() }
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:float_range">minecraft:float_range</a>
      */
     @JvmStatic
-    fun floatRange() = NumberRangeArgumentType.floatRange()
+    fun floatRange() = RangeArgument.floatRange()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
@@ -392,11 +417,11 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
      */
     @JvmStatic
-    fun player() = wrapArgument(EntityArgumentType.player()) {
+    fun player() = wrapArgument(EntityArgument.player()) {
         EntitySelectorWrapper(it).getPlayers().let { players ->
             when {
-                players.isEmpty() -> throw EntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create()
-                players.size > 1 -> throw EntityArgumentType.TOO_MANY_PLAYERS_EXCEPTION.create()
+                players.isEmpty() -> throw EntityArgument.NO_PLAYERS_FOUND.create()
+                players.size > 1 -> throw EntityArgument.ERROR_NOT_SINGLE_PLAYER.create()
                 else -> players[0]
             }
         }
@@ -406,27 +431,27 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:game_profile">minecraft:game_profile</a>
      */
     @JvmStatic
-    fun players() = wrapArgument(EntityArgumentType.players()) { EntitySelectorWrapper(it).getPlayers() }
+    fun players() = wrapArgument(EntityArgument.players()) { EntitySelectorWrapper(it).getPlayers() }
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:gamemode">minecraft:gamemode</a>
      */
     @JvmStatic
-    fun gameMode() = GameModeArgumentType.gameMode()
+    fun gameMode() = GameModeArgument.gameMode()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:int_range">minecraft:int_range</a>
      */
     @JvmStatic
-    fun intRange() = NumberRangeArgumentType.intRange()
+    fun intRange() = RangeArgument.intRange()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_predicate">minecraft:item_predicate</a>
      */
     @JvmStatic
     fun itemPredicate(): ArgumentType<(Item) -> Boolean> {
-        val registryAccess = CommandManager.createRegistryAccess(BuiltinRegistries.createWrapperLookup())
-        val predicate = ItemPredicateArgumentType.itemPredicate(registryAccess)
+        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val predicate = ItemPredicateArgument.itemPredicate(registryAccess)
         return wrapArgument(predicate) { pred -> { pred.test(it.mcValue) } }
     }
 
@@ -434,15 +459,15 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_slot">minecraft:item_slot</a>
      */
     @JvmStatic
-    fun itemSlot() = ItemSlotArgumentType.itemSlot()
+    fun itemSlot() = SlotArgument.slot()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:item_stack">minecraft:item_stack</a>
      */
     @JvmStatic
     fun itemStack(): ArgumentType<ItemStackArgumentWrapper> {
-        val registryAccess = CommandManager.createRegistryAccess(BuiltinRegistries.createWrapperLookup())
-        val arg = ItemStackArgumentType.itemStack(registryAccess)
+        val registryAccess = Commands.createValidationContext(VanillaRegistries.createLookup())
+        val arg = ItemArgument.item(registryAccess)
         return wrapArgument(arg, ::ItemStackArgumentWrapper)
     }
 
@@ -450,56 +475,56 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:message">minecraft:message</a>
      */
     @JvmStatic
-    fun message() = wrapArgument(MessageArgumentType.message(), ::MessageFormatArgumentWrapper)
+    fun message() = wrapArgument(MessageArgument.message(), ::MessageFormatArgumentWrapper)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_compound_tag">minecraft:nbt_compound_tag</a>
      */
     @JvmStatic
-    fun nbtCompoundTag() = wrapArgument(NbtCompoundArgumentType.nbtCompound(), ::NBTTagCompound)
+    fun nbtCompoundTag() = wrapArgument(CompoundTagArgument.compoundTag(), ::NBTTagCompound)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_path">minecraft:nbt_path</a>
      */
     @JvmStatic
-    fun nbtPath() = wrapArgument(NbtPathArgumentType.nbtPath(), ::NbtPathWrapper)
+    fun nbtPath() = wrapArgument(NbtPathArgument.nbtPath(), ::NbtPathWrapper)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:nbt_tag">minecraft:nbt_tag</a>
      */
     @JvmStatic
-    fun nbtTag() = wrapArgument(NbtElementArgumentType.nbtElement(), NBTBase::fromMC)
+    fun nbtTag() = wrapArgument(NbtTagArgument.nbtTag(), NBTBase::fromMC)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:resource">minecraft:resource</a>
      */
     @JvmStatic
-    fun resource() = IdentifierArgumentType.identifier()
+    fun resource() = ResourceLocationArgument.id()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:rotation">minecraft:rotation</a>
      */
     @JvmStatic
-    fun rotation() = wrapArgument(RotationArgumentType.rotation(), ::PosArgumentWrapper)
+    fun rotation() = wrapArgument(RotationArgument.rotation(), ::PosArgumentWrapper)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:swizzle">minecraft:swizzle</a>
      */
     @JvmStatic
-    fun swizzle() = wrapArgument(SwizzleArgumentType.swizzle()) { it.map(BlockFace.Axis::fromMC) }
+    fun swizzle() = wrapArgument(SwizzleArgument.swizzle()) { it.map(BlockFace.Axis::fromMC) }
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:time">minecraft:time</a>
      */
     @JvmStatic
     @JvmOverloads
-    fun time(minimum: Int = 0) = TimeArgumentType.time(minimum)
+    fun time(minimum: Int = 0) = TimeArgument.time(minimum)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:uuid">minecraft:uuid</a>
      */
     @JvmStatic
-    fun uuid() = UuidArgumentType.uuid()
+    fun uuid() = UuidArgument.uuid()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec2">minecraft:vec2</a>
@@ -507,7 +532,7 @@ object DynamicCommands : CommandCollection() {
     @JvmStatic
     @JvmOverloads
     fun vec2(centerIntegers: Boolean = true) =
-        wrapArgument(Vec2ArgumentType.vec2(centerIntegers), ::PosArgumentWrapper)
+        wrapArgument(Vec2Argument.vec2(centerIntegers), ::PosArgumentWrapper)
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:vec3">minecraft:vec3</a>
@@ -515,7 +540,7 @@ object DynamicCommands : CommandCollection() {
     @JvmStatic
     @JvmOverloads
     fun vec3(centerIntegers: Boolean = true) =
-        wrapArgument(Vec3ArgumentType.vec3(centerIntegers), ::PosArgumentWrapper)
+        wrapArgument(Vec3Argument.vec3(centerIntegers), ::PosArgumentWrapper)
 
     /**
      * Allows choosing from a set list of strings. When suggested to the user, this
@@ -669,15 +694,15 @@ object DynamicCommands : CommandCollection() {
     fun error(reader: ImmutableStringReader, message: TextComponent): Nothing =
         throw SimpleCommandExceptionType(message).createWithContext(reader)
 
-    private fun getMockCommandSource(): ServerCommandSource {
-        return ServerCommandSource(
-            object : CommandOutput {
-                override fun sendMessage(message: Text?) {
+    private fun getMockCommandSource(): CommandSourceStack {
+        return CommandSourceStack(
+            object : CommandSource {
+                override fun sendSystemMessage(message: Component?) {
                     ChatLib.chat(message)
                 }
-                override fun shouldReceiveFeedback() = true
-                override fun shouldTrackOutput() = false
-                override fun shouldBroadcastConsoleToOps() = false
+                override fun acceptsSuccess() = true
+                override fun acceptsFailure() = false
+                override fun shouldInformAdmins() = false
             },
             Player.getPos().toVec3d(),
             Player.getRotation(),
@@ -705,34 +730,34 @@ object DynamicCommands : CommandCollection() {
         }
     }
 
-    data class AngleArgumentWrapper(val angle: Angle) {
+    data class AngleArgumentWrapper(val angle: SingleAngle) {
         @JvmOverloads
         fun getAngle(entity: Entity = Player.asPlayerMP()!!) = angle.getAngle(
             getMockCommandSource().withRotation(entity.getRotation())
         )
     }
 
-    data class PosArgumentWrapper(val impl: PosArgument) : PosArgument by impl {
-        fun toAbsolutePos(): Vec3d = impl.getPos(getMockCommandSource())
+    data class PosArgumentWrapper(val impl: Coordinates) : Coordinates by impl {
+        fun toAbsolutePos(): Vec3 = impl.getPosition(getMockCommandSource())
 
-        fun toAbsoluteBlockPos(): BlockPos = BlockPos(impl.toAbsoluteBlockPos(getMockCommandSource()))
+        fun toAbsoluteBlockPos(): BlockPos = BlockPos(impl.getBlockPos(getMockCommandSource()))
 
-        fun toAbsoluteRotation(): Vec2f = impl.getRotation(getMockCommandSource())
+        fun toAbsoluteRotation(): Vec2 = impl.getRotation(getMockCommandSource())
 
         override fun toString() = "PosArgument"
     }
 
-    data class BlockPredicateWrapper(val impl: BlockPredicateArgumentType.BlockPredicate) {
+    data class BlockPredicateWrapper(val impl: BlockPredicateArgument.Result) {
         fun test(blockPos: BlockPos): Boolean {
-            return impl.test(CachedBlockPosition(World.toMC(), blockPos.toMC(), true))
+            return impl.test(BlockInWorld(World.toMC(), blockPos.toMC(), true))
         }
 
         override fun toString() = "BlockPredicateArgument"
     }
 
-    data class BlockStateArgumentWrapper(val impl: BlockStateArgument) {
+    data class BlockStateArgumentWrapper(val impl: BlockInput) {
         fun test(blockPos: BlockPos): Boolean =
-            impl.test(CachedBlockPosition(World.toMC(), blockPos.toMC(), true))
+            impl.test(BlockInWorld(World.toMC(), blockPos.toMC(), true))
 
         override fun toString() = "BlockStateArgument"
     }
@@ -743,39 +768,39 @@ object DynamicCommands : CommandCollection() {
         fun getEntity(): Entity {
             val entities = getEntities()
             return when {
-                entities.isEmpty() -> throw EntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create()
-                entities.size > 1 -> throw EntityArgumentType.TOO_MANY_ENTITIES_EXCEPTION.create()
+                entities.isEmpty() -> throw EntityArgument.NO_ENTITIES_FOUND.create()
+                entities.size > 1 -> throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.create()
                 else -> entities[0]
             }
         }
 
         fun getEntities(): List<Entity> {
             return getUnfilteredEntities().filter {
-                it.toMC().type.isEnabled(World.toMC()!!.enabledFeatures)
+                it.toMC().type.isEnabled(World.toMC()!!.enabledFeatures())
             }
         }
 
         private fun getUnfilteredEntities(): List<Entity> {
-            if (!mixed.includesNonPlayers)
+            if (!mixed.includesEntities)
                 return getPlayers()
 
             if (mixed.playerName != null) {
-                val entity = World.getAllEntitiesOfType(PlayerEntity::class.java).find {
+                val entity = World.getAllEntitiesOfType(Player::class.java).find {
                     it.getName() == mixed.playerName
                 }
                 return listOfNotNull(entity)
             }
 
-            if (mixed.uuid != null) {
-                val entity = World.getAllEntitiesOfType(PlayerEntity::class.java).find {
-                    it.getUUID() == mixed.uuid
+            if (mixed.entityUUID != null) {
+                val entity = World.getAllEntitiesOfType(Player::class.java).find {
+                    it.getUUID() == mixed.entityUUID
                 }
                 return listOfNotNull(entity)
             }
 
-            val position = mixed.positionOffset.apply(Player.getPos().toVec3d())
+            val position = mixed.position.apply(Player.getPos().toVec3d())
             val predicate = getPositionPredicate(position)
-            if (mixed.senderOnly) {
+            if (mixed.currentEntity) {
                 if (predicate.test(Player.toMC()!!))
                     return listOf(Player.asPlayerMP()!!)
                 return emptyList()
@@ -788,88 +813,88 @@ object DynamicCommands : CommandCollection() {
 
         fun getPlayers(): List<PlayerMP> {
             if (mixed.playerName != null) {
-                val entity = World.getAllEntitiesOfType(PlayerEntity::class.java).find {
+                val entity = World.getAllEntitiesOfType(Player::class.java).find {
                     it.getName() == mixed.playerName
                 }
                 @Suppress("UNCHECKED_CAST")
                 return listOfNotNull(entity) as List<PlayerMP>
             }
 
-            if (mixed.uuid != null) {
-                val entity = World.getAllEntitiesOfType(PlayerEntity::class.java).find {
-                    it.getUUID() == mixed.uuid
+            if (mixed.entityUUID != null) {
+                val entity = World.getAllEntitiesOfType(Player::class.java).find {
+                    it.getUUID() == mixed.entityUUID
                 }
                 @Suppress("UNCHECKED_CAST")
                 return listOfNotNull(entity) as List<PlayerMP>
             }
 
-            val position = mixed.positionOffset.apply(Player.getPos().toVec3d())
+            val position = mixed.position.apply(Player.getPos().toVec3d())
             val predicate = getPositionPredicate(position)
-            if (mixed.senderOnly) {
+            if (mixed.currentEntity) {
                 if (predicate.test(Player.toMC()!!))
                     return listOf(Player.asPlayerMP()!!)
                 return emptyList()
             }
 
-            val limit = if (mixed.sorter == EntitySelector.ARBITRARY) mixed.limit else Int.MAX_VALUE
-            val players = World.toMC()!!.players.filter(predicate::test).take(limit).toMutableList()
-            return getEntities(position, players).map { PlayerMP(it as PlayerEntity) }
+            val limit = if (mixed.order == EntitySelector.ORDER_ARBITRARY) mixed.maxResults else Int.MAX_VALUE
+            val players = World.toMC()!!.players().filter(predicate::test).take(limit).toMutableList()
+            return getEntities(position, players).map { PlayerMP(it as MCPlayer) }
         }
 
-        private fun <T : MCEntity> getEntities(pos: Vec3d, entities: MutableList<T>): List<T> {
+        private fun <T : MCEntity> getEntities(pos: Vec3, entities: MutableList<T>): List<T> {
             if (entities.size > 1)
-                mixed.sorter.accept(pos, entities)
-            return entities.subList(0, min(mixed.limit, entities.size))
+                mixed.order.accept(pos, entities)
+            return entities.subList(0, min(mixed.maxResults, entities.size))
         }
 
         private fun appendEntitiesFromWorld(
             entities: MutableList<MCEntity>,
-            pos: Vec3d,
+            pos: Vec3,
             predicate: Predicate<MCEntity>
         ) {
-            val limit = if (mixed.sorter == EntitySelector.ARBITRARY) mixed.limit else Int.MAX_VALUE
+            val limit = if (mixed.order == EntitySelector.ORDER_ARBITRARY) mixed.maxResults else Int.MAX_VALUE
             if (entities.size >= limit)
                 return
 
-            val min = pos.add(Vec3d(-1000.0, -1000.0, -1000.0))
-            val max = pos.add(Vec3d(1000.0, 1000.0, 1000.0))
-            val box = mixed.box?.offset(pos) ?: Box(min, max)
-            World.toMC()!!.collectEntitiesByType(mixed.entityFilter, box, predicate, entities, limit)
+            val min = pos.add(Vec3(-1000.0, -1000.0, -1000.0))
+            val max = pos.add(Vec3(1000.0, 1000.0, 1000.0))
+            val box = mixed.aabb?.move(pos) ?: AABB(min, max)
+            World.toMC()!!.getEntities(mixed.type, box, predicate, entities, limit)
         }
 
-        private fun getPositionPredicate(pos: Vec3d): Predicate<MCEntity> {
-            var predicate = mixed.predicates.reduceOrNull { acc, predicate -> acc.and(predicate) } ?: Predicate { true }
-            if (mixed.box != null) {
-                val box = mixed.box!!.offset(pos)
+        private fun getPositionPredicate(pos: Vec3): Predicate<MCEntity> {
+            var predicate = mixed.contextFreePredicates.reduceOrNull { acc, predicate -> acc.and(predicate) } ?: Predicate { true }
+            if (mixed.aabb != null) {
+                val box = mixed.aabb!!.move(pos)
                 predicate = predicate.and { box.intersects(it.boundingBox) }
             }
-            if (!mixed.distance.isDummy)
-                predicate = predicate.and { mixed.distance.testSqrt(it.squaredDistanceTo(pos)) }
+            if (!mixed.range.isAny)
+                predicate = predicate.and { mixed.range.matchesSqr(it.distanceToSqr(pos)) }
             return predicate
         }
     }
 
-    data class ItemStackArgumentWrapper(private val impl: ItemStackArgument) : Predicate<Item> {
+    data class ItemStackArgumentWrapper(private val impl: ItemInput) : Predicate<Item> {
         val itemType = ItemType(impl.item)
 
-        override fun test(item: Item) = ItemStack.areItemsAndComponentsEqual(itemType.asItem().toMC(), item.toMC())
+        override fun test(item: Item) = ItemStack.isSameItemSameComponents(itemType.asItem().toMC(), item.toMC())
 
         fun test(type: ItemType) = itemType.getRegistryName() == type.getRegistryName()
     }
 
-    data class MessageFormatArgumentWrapper(private val impl: MessageArgumentType.MessageFormat) {
-        var text = impl.contents
+    data class MessageFormatArgumentWrapper(private val impl: MessageArgument.Message) {
+        var text = impl.text
 
         fun format(): TextComponent {
-            if (impl.selectors.isEmpty())
+            if (impl.parts.isEmpty())
                 return TextComponent(text)
 
-            var component = TextComponent(text.substring(0, impl.selectors[0].start))
-            var i = impl.selectors[0].start
+            var component = TextComponent(text.substring(0, impl.parts[0].start))
+            var i = impl.parts[0].start
 
-            for (selector in impl.selectors) {
+            for (selector in impl.parts) {
                 val entities = EntitySelectorWrapper(selector.selector).getEntities()
-                val nameComponent = EntitySelector.getNames(entities.map(Entity::toMC))
+                val nameComponent = EntitySelector.joinNames(entities.map(Entity::toMC))
                 if (i < selector.start)
                     component = component.withText(text.substring(i, selector.start))
 
@@ -888,11 +913,11 @@ object DynamicCommands : CommandCollection() {
         override fun toString() = text
     }
 
-    data class NbtPathWrapper(private val impl: NbtPathArgumentType.NbtPath) {
+    data class NbtPathWrapper(private val impl: NbtPathArgument.NbtPath) {
         fun get(nbt: NBTBase) = impl.get(nbt.toMC())
-        fun count(nbt: NBTBase) = impl.count(nbt.toMC())
-        fun getOrInit(nbt: NBTBase, supplier: () -> NBTBase) = impl.getOrInit(nbt.toMC()) { supplier().toMC() }
-        fun put(nbt: NBTBase, source: NBTBase) = impl.put(nbt.toMC(), source.toMC())
+        fun count(nbt: NBTBase) = impl.countMatching(nbt.toMC())
+        fun getOrInit(nbt: NBTBase, supplier: () -> NBTBase) = impl.getOrCreate(nbt.toMC()) { supplier().toMC() }
+        fun put(nbt: NBTBase, source: NBTBase) = impl.set(nbt.toMC(), source.toMC())
         fun insert(index: Int, compound: NBTTagCompound, elements: List<NBTBase>) =
             impl.insert(index, compound.toMC() as MCNbtCompound, elements.map(NBTBase::toMC))
 
