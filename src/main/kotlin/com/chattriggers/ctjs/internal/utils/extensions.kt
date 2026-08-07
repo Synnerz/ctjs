@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.internal.utils
 
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.fasterxml.jackson.core.Version
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.Scriptable
@@ -19,8 +19,8 @@ fun String.toVersion(): Version {
     return Version(split.getOrElse(0) { 0 }, split.getOrElse(1) { 0 }, split.getOrElse(2) { 0 }, extra, null, null)
 }
 
-fun String.toIdentifier(): ResourceLocation {
-    return ResourceLocation.parse(if (':' in this) this else "minecraft:$this")
+fun String.toIdentifier(): Identifier {
+    return Identifier.parse(if (':' in this) this else "minecraft:$this")
 }
 
 fun String.urlEncode() = URLEncoder.encode(this, Charset.defaultCharset())

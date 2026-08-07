@@ -11,8 +11,8 @@ import kotlinx.serialization.json.Json
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.KeyMapping
 import com.mojang.blaze3d.platform.InputConstants
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.Util
+import net.minecraft.resources.Identifier
+import net.minecraft.util.Util
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
 import java.io.BufferedReader
@@ -64,7 +64,7 @@ object ConsoleHostProcess : Initializer {
                 "ctjs.key.binding.console",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_GRAVE_ACCENT,
-                KeyMapping.Category.register(ResourceLocation.parse("ctjs.key.category")),
+                KeyMapping.Category.register(Identifier.parse("ctjs.key.category")),
             )
         )
 

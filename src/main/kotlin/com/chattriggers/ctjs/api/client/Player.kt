@@ -172,7 +172,7 @@ object Player {
         val pos = toMC()?.blockPosition() ?: return ""
         val biomeEntry = World.toMC()?.getBiome(pos) ?: return ""
 
-        return biomeEntry.unwrapKey().get().location().path
+        return biomeEntry.unwrapKey().get().identifier().path
     }
 
     /**
@@ -181,7 +181,7 @@ object Player {
      * @return the light level at the player's current position
      */
     @JvmStatic
-    fun getLightLevel(): Int = World.toMC()?.getMaxLocalRawBrightness(toMC()?.blockPosition()) ?: 0
+    fun getLightLevel(): Int = toMC()?.blockPosition()?.let { World.toMC()?.getMaxLocalRawBrightness(it) } ?: 0
 
     @JvmStatic
     fun isMoving(): Boolean = toMC()?.speed?.let { it != 0f } ?: false

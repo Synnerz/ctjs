@@ -112,13 +112,13 @@ object Client {
      * @return The GuiNewChat object for the chat gui
      */
     @JvmStatic
-    fun getChatGui(): ChatComponent? = getMinecraft().gui?.chat
+    fun getChatGui(): ChatComponent = getMinecraft().gui.chat
 
     @JvmStatic
     fun isInChat(): Boolean = getMinecraft().screen is ChatScreen
 
     @JvmStatic
-    fun getTabGui(): PlayerTabOverlay? = getMinecraft().gui?.tabList
+    fun getTabGui(): PlayerTabOverlay = getMinecraft().gui.tabList
 
     @JvmStatic
     fun isInTab(): Boolean = getMinecraft().options.keyPlayerList.isDown
@@ -327,10 +327,10 @@ object Client {
     }
 
     class CameraWrapper {
-        fun getX(): Double = getMinecraft().gameRenderer.mainCamera.position.x
+        fun getX(): Double = getMinecraft().gameRenderer.mainCamera.position().x
 
-        fun getY(): Double = getMinecraft().gameRenderer.mainCamera.position.y
+        fun getY(): Double = getMinecraft().gameRenderer.mainCamera.position().y
 
-        fun getZ(): Double = getMinecraft().gameRenderer.mainCamera.position.z
+        fun getZ(): Double = getMinecraft().gameRenderer.mainCamera.position().z
     }
 }

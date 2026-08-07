@@ -8,6 +8,7 @@ import com.chattriggers.ctjs.internal.utils.asMixin
 import net.fabricmc.fabric.impl.command.client.ClientCommandInternals
 import net.minecraft.client.GuiMessage
 import net.minecraft.client.GuiMessageTag
+import net.minecraft.client.gui.components.ChatComponent
 import org.mozilla.javascript.regexp.NativeRegExp
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -129,7 +130,7 @@ object ChatLib {
      */
     @JvmStatic
     fun getChatWidth(): Int {
-        return Client.getChatGui()?.width ?: 0
+        return ChatComponent.getWidth(Client.getMinecraft().options.chatWidth().get()) ?: 0
     }
 
     /**

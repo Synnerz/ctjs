@@ -326,7 +326,7 @@ public final class com/chattriggers/ctjs/api/client/Settings {
 	public static final field sound Lcom/chattriggers/ctjs/api/client/Settings$SoundWrapper;
 	public static final field video Lcom/chattriggers/ctjs/api/client/Settings$VideoWrapper;
 	public static final fun getDifficulty ()Lcom/chattriggers/ctjs/api/client/Settings$Difficulty;
-	public static final fun getFOV ()Ljava/lang/Integer;
+	public static final fun getFOV ()I
 	public static final fun getSettings ()Lnet/minecraft/client/Options;
 	public static final fun setFOV (I)V
 	public static final fun toMC ()Lnet/minecraft/client/Options;
@@ -355,16 +355,16 @@ public final class com/chattriggers/ctjs/api/client/Settings$ChatVisibility$Comp
 
 public final class com/chattriggers/ctjs/api/client/Settings$ChatWrapper {
 	public fun <init> ()V
-	public final fun getColors ()Ljava/lang/Boolean;
-	public final fun getFocusedHeight ()Ljava/lang/Double;
-	public final fun getOpacity ()Ljava/lang/Double;
-	public final fun getPromptOnWebLinks ()Ljava/lang/Boolean;
-	public final fun getReducedDebugInfo ()Ljava/lang/Boolean;
-	public final fun getScale ()Ljava/lang/Double;
-	public final fun getUnfocusedHeight ()Ljava/lang/Double;
+	public final fun getColors ()Z
+	public final fun getFocusedHeight ()D
+	public final fun getOpacity ()D
+	public final fun getPromptOnWebLinks ()Z
+	public final fun getReducedDebugInfo ()Z
+	public final fun getScale ()D
+	public final fun getUnfocusedHeight ()D
 	public final fun getVisibility ()Lcom/chattriggers/ctjs/api/client/Settings$ChatVisibility;
-	public final fun getWebLinks ()Ljava/lang/Boolean;
-	public final fun getWidth ()Ljava/lang/Double;
+	public final fun getWebLinks ()Z
+	public final fun getWidth ()D
 	public final fun setColors (Z)V
 	public final fun setFocusedHeight (D)V
 	public final fun setOpacity (D)V
@@ -423,18 +423,18 @@ public final class com/chattriggers/ctjs/api/client/Settings$GraphicsMode : java
 	public static final field FABULOUS Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
 	public static final field FANCY Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
 	public static final field FAST Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
-	public static final fun fromMC (Lnet/minecraft/client/GraphicsStatus;)Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
+	public static final fun fromMC (Lnet/minecraft/client/GraphicsPreset;)Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public synthetic fun getMcValue ()Ljava/lang/Object;
-	public fun getMcValue ()Lnet/minecraft/client/GraphicsStatus;
+	public fun getMcValue ()Lnet/minecraft/client/GraphicsPreset;
 	public synthetic fun toMC ()Ljava/lang/Object;
-	public fun toMC ()Lnet/minecraft/client/GraphicsStatus;
+	public fun toMC ()Lnet/minecraft/client/GraphicsPreset;
 	public static fun valueOf (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
 	public static fun values ()[Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
 }
 
 public final class com/chattriggers/ctjs/api/client/Settings$GraphicsMode$Companion {
-	public final fun fromMC (Lnet/minecraft/client/GraphicsStatus;)Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
+	public final fun fromMC (Lnet/minecraft/client/GraphicsPreset;)Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
 }
 
 public final class com/chattriggers/ctjs/api/client/Settings$ParticlesMode : java/lang/Enum, com/chattriggers/ctjs/api/CTWrapper {
@@ -478,15 +478,15 @@ public final class com/chattriggers/ctjs/api/client/Settings$SkinWrapper {
 
 public final class com/chattriggers/ctjs/api/client/Settings$SoundWrapper {
 	public fun <init> ()V
-	public final fun getAmbient ()Ljava/lang/Double;
-	public final fun getBlocks ()Ljava/lang/Double;
-	public final fun getFriendlyCreatures ()Ljava/lang/Double;
-	public final fun getHostileCreatures ()Ljava/lang/Double;
-	public final fun getMasterVolume ()Ljava/lang/Double;
-	public final fun getMusicVolume ()Ljava/lang/Double;
-	public final fun getNoteblockVolume ()Ljava/lang/Double;
-	public final fun getPlayers ()Ljava/lang/Double;
-	public final fun getWeather ()Ljava/lang/Double;
+	public final fun getAmbient ()D
+	public final fun getBlocks ()D
+	public final fun getFriendlyCreatures ()D
+	public final fun getHostileCreatures ()D
+	public final fun getMasterVolume ()D
+	public final fun getMusicVolume ()D
+	public final fun getNoteblockVolume ()D
+	public final fun getPlayers ()D
+	public final fun getWeather ()D
 	public final fun setAmbient (D)V
 	public final fun setBlocks (D)V
 	public final fun setFriendlyCreatures (D)V
@@ -500,19 +500,19 @@ public final class com/chattriggers/ctjs/api/client/Settings$SoundWrapper {
 
 public final class com/chattriggers/ctjs/api/client/Settings$VideoWrapper {
 	public fun <init> ()V
-	public final fun getBobbing ()Ljava/lang/Boolean;
-	public final fun getBrightness ()Ljava/lang/Double;
+	public final fun getBobbing ()Z
+	public final fun getBrightness ()D
 	public final fun getClouds ()Lcom/chattriggers/ctjs/api/client/Settings$CloudRenderMode;
-	public final fun getEntityShadows ()Ljava/lang/Boolean;
-	public final fun getFullscreen ()Ljava/lang/Boolean;
+	public final fun getEntityShadows ()Z
+	public final fun getFullscreen ()Z
 	public final fun getGraphicsMode ()Lcom/chattriggers/ctjs/api/client/Settings$GraphicsMode;
-	public final fun getGuiScale ()Ljava/lang/Integer;
-	public final fun getMaxFrameRate ()Ljava/lang/Integer;
-	public final fun getMipmapLevels ()Ljava/lang/Integer;
+	public final fun getGuiScale ()I
+	public final fun getMaxFrameRate ()I
+	public final fun getMipmapLevels ()I
 	public final fun getParticles ()Lcom/chattriggers/ctjs/api/client/Settings$ParticlesMode;
-	public final fun getRenderDistance ()Ljava/lang/Integer;
-	public final fun getSmoothLighting ()Ljava/lang/Boolean;
-	public final fun getVsync ()Ljava/lang/Boolean;
+	public final fun getRenderDistance ()I
+	public final fun getSmoothLighting ()Z
+	public final fun getVsync ()Z
 	public final fun setBobbing (Z)V
 	public final fun setBrightness (D)V
 	public final fun setClouds (Lcom/chattriggers/ctjs/api/client/Settings$CloudRenderMode;)V
@@ -667,7 +667,7 @@ public final class com/chattriggers/ctjs/api/commands/DynamicCommands : com/chat
 	public static final fun registerCommand (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/commands/RootCommand;
 	public static final fun registerCommand (Ljava/lang/String;Lorg/mozilla/javascript/Function;)Lcom/chattriggers/ctjs/api/commands/RootCommand;
 	public static synthetic fun registerCommand$default (Ljava/lang/String;Lorg/mozilla/javascript/Function;ILjava/lang/Object;)Lcom/chattriggers/ctjs/api/commands/RootCommand;
-	public static final fun resource ()Lnet/minecraft/commands/arguments/ResourceLocationArgument;
+	public static final fun resource ()Lnet/minecraft/commands/arguments/IdentifierArgument;
 	public static final fun rotation ()Lcom/mojang/brigadier/arguments/ArgumentType;
 	public static final fun string ()Lcom/mojang/brigadier/arguments/StringArgumentType;
 	public static final fun swizzle ()Lcom/mojang/brigadier/arguments/ArgumentType;
@@ -1609,7 +1609,6 @@ public final class com/chattriggers/ctjs/api/render/LegacyPipelineBuilder {
 	public final fun enableCull ()Lcom/chattriggers/ctjs/api/render/LegacyPipelineBuilder;
 	public final fun enableDepth ()Lcom/chattriggers/ctjs/api/render/LegacyPipelineBuilder;
 	public final fun enabledBlend ()Lcom/chattriggers/ctjs/api/render/LegacyPipelineBuilder;
-	public final fun layer ()Lnet/minecraft/client/renderer/RenderType;
 	public final fun state ()Ljava/lang/String;
 }
 
@@ -2460,7 +2459,6 @@ public final class com/chattriggers/ctjs/api/world/World {
 	public static final fun getBlockStateAt (Lcom/chattriggers/ctjs/api/world/block/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
 	public static final fun getChunk (III)Lcom/chattriggers/ctjs/api/world/Chunk;
 	public static final fun getDifficulty ()Lcom/chattriggers/ctjs/api/client/Settings$Difficulty;
-	public static final fun getMoonPhase ()I
 	public static final fun getPlayerByName (Ljava/lang/String;)Lcom/chattriggers/ctjs/api/entity/PlayerMP;
 	public static final fun getRainingStrength ()F
 	public static final fun getSkyLightLevel (III)I

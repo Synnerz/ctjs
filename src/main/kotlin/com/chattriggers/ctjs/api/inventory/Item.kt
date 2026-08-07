@@ -53,12 +53,12 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
     fun isEnchanted() = mcValue.isEnchanted
 
     fun canPlaceOn(pos: BlockPos) =
-        mcValue.canPlaceOnBlockInAdventureMode(BlockInWorld(World.toMC(), pos.toMC(), false))
+        World.toMC()?.let { mcValue.canPlaceOnBlockInAdventureMode(BlockInWorld(it, pos.toMC(), false)) } ?: false
 
     fun canPlaceOn(block: Block) = canPlaceOn(block.pos)
 
     fun canHarvest(pos: BlockPos) =
-        mcValue.canBreakBlockInAdventureMode(BlockInWorld(World.toMC(), pos.toMC(), false))
+        World.toMC()?.let { mcValue.canBreakBlockInAdventureMode(BlockInWorld(it, pos.toMC(), false)) } ?: false
 
     fun canHarvest(block: Block) = canHarvest(block.pos)
 

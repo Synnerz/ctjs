@@ -31,7 +31,7 @@ public class ChatComponentMixin {
         method = "addMessageToQueue(Lnet/minecraft/client/GuiMessage;)V",
         at = @At(
             value = "INVOKE",
-            target = "Ljava/util/List;remove(I)Ljava/lang/Object;",
+            target = "Ljava/util/List;removeLast()Ljava/lang/Object;",
             shift = At.Shift.BEFORE
         )
     )

@@ -16,8 +16,8 @@ object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules
         var scroll = 0f
     }
 
-    override fun render(ctx: GuiGraphics?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-        ctx!!.pose().pushMatrix()
+    override fun render(ctx: GuiGraphics, mouseY: Int, j: Int, deltaTicks: Float) {
+        ctx.pose().pushMatrix()
 
         val middle = Renderer.screen.getWidth() / 2
         val width = (Renderer.screen.getWidth() - 100).coerceAtMost(500)

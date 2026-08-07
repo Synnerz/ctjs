@@ -28,7 +28,7 @@ public class SoundEngineMixin {
 
         TriggerType.SOUND_PLAY.triggerAll(
             new Vec3f((float) sound.getX(), (float) sound.getY(), (float) sound.getZ()),
-            sound.getLocation().toString(),
+            sound.getIdentifier().toString(),
             volume,
             pitch,
             sound.getSource(),

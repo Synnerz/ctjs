@@ -96,7 +96,7 @@ class Team(override val mcValue: MCTeam) : CTWrapper<MCTeam> {
             } ?: ChatFormatting.RESET
             null -> ChatFormatting.RESET
             else -> throw IllegalArgumentException("Could not convert type ${color::class.simpleName} to a Formatting")
-        }
+        } ?: ChatFormatting.RESET
     }
 
     /**

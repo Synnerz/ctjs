@@ -274,8 +274,8 @@ internal object CTCommand : Initializer {
         }
 
         override fun <S : Any?> listSuggestions(
-            context: CommandContext<S>?,
-            builder: SuggestionsBuilder?
+            context: CommandContext<S>,
+            builder: SuggestionsBuilder
         ): CompletableFuture<Suggestions> {
             return SharedSuggestionProvider.suggest(ModuleManager.cachedModules.map { it.name }, builder)
         }

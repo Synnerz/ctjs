@@ -7,7 +7,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.BlockOutlineRenderState;
 import net.minecraft.client.renderer.state.LevelRenderState;
 import com.mojang.blaze3d.resource.ResourceHandle;
@@ -53,7 +52,7 @@ public abstract class LevelRendererMixin {
     }
 
     @Inject(method = "method_62214", at = @At("RETURN"))
-    private void afterRender(GpuBufferSlice gpuBufferSlice, LevelRenderState worldRenderState, ProfilerFiller profiler, Matrix4f matrix4f, ResourceHandle handle, ResourceHandle handle2, boolean bl, Frustum frustum, ResourceHandle handle3, ResourceHandle handle4, CallbackInfo ci) {
+    private void afterRender(GpuBufferSlice gpuBufferSlice, LevelRenderState levelRenderState, ProfilerFiller profilerFiller, Matrix4f matrix4f, ResourceHandle resourceHandle, ResourceHandle resourceHandle2, boolean bl, ResourceHandle resourceHandle3, ResourceHandle resourceHandle4, CallbackInfo ci) {
         WorldListener.INSTANCE.triggerRenderLast();
     }
 }

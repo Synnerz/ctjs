@@ -312,7 +312,7 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun pos(x: Float, y: Float, z: Float = 0f) = apply {
-        val camera = Client.getMinecraft().gameRenderer.mainCamera.position
+        val camera = Client.getMinecraft().gameRenderer.mainCamera.position()
         Renderer3d.pos(x + camera.x.toFloat(), y + camera.y.toFloat(), z + camera.z.toFloat())
     }
 
@@ -563,7 +563,7 @@ object Renderer {
 
         scale(1f, 1f, 50f)
 
-        RenderSystem.setShaderTexture(0, image.getTexture()?.textureView)
+//        RenderSystem.setShaderTexture(0, image.getTexture()?.textureView)
 
         begin(DrawMode.QUADS, VertexFormat.POSITION_TEXTURE_COLOR, snippet = RenderSnippet.POSITION_TEX_COLOR_SNIPPET)
         pos(x, y + height, 0f).tex(0f, 1f).color(colorized!!)

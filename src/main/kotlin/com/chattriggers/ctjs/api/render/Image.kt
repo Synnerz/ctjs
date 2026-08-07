@@ -4,7 +4,7 @@ import com.chattriggers.ctjs.CTJS
 import com.chattriggers.ctjs.api.client.Client
 import com.mojang.blaze3d.platform.NativeImage
 import net.minecraft.client.renderer.texture.DynamicTexture
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.lwjgl.system.MemoryUtil
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -19,7 +19,7 @@ class Image(var image: BufferedImage?) {
     private val textureWidth = image?.width ?: 0
     private val textureHeight = image?.height ?: 0
     private val aspectRatio = if (textureHeight != 0) textureHeight.toFloat() / textureWidth else 0f
-    private var identifier: ResourceLocation? = null
+    private var identifier: Identifier? = null
 
     init {
         CTJS.images.add(this)
@@ -35,9 +35,9 @@ class Image(var image: BufferedImage?) {
 
     fun getTexture(): DynamicTexture? = texture?.texture
 
-    internal fun getIdOrRegister(): ResourceLocation {
+    internal fun getIdOrRegister(): Identifier {
         if (identifier == null) {
-            identifier = ResourceLocation.fromNamespaceAndPath(CTJS.MOD_ID,"image${nextIdentifierIndex++}")
+            identifier = Identifier.fromNamespaceAndPath(CTJS.MOD_ID,"image${nextIdentifierIndex++}")
             if (texture != null) {
                 Client.getMinecraft().textureManager.register(identifier!!, texture!!.texture)
             } else {

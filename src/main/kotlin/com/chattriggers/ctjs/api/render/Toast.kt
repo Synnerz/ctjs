@@ -11,9 +11,9 @@ import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.toasts.ToastManager
-import net.minecraft.resources.ResourceLocation
 import org.mozilla.javascript.*
 import net.minecraft.client.gui.components.toasts.Toast
+import net.minecraft.resources.Identifier
 
 // https://github.com/Edgeburn/Toasts
 /**
@@ -42,12 +42,12 @@ class Toast(config: NativeObject) : Toast {
         get() = descriptionBacker
         set(value) { descriptionBacker = value?.let { TextComponent(it) } }
 
-    private var backgroundBacker: ResourceLocation? = ResourceLocation.withDefaultNamespace("toast/advancement")
+    private var backgroundBacker: Identifier? = Identifier.withDefaultNamespace("toast/advancement")
     var background: Any?
         get() = backgroundBacker
         set(value) { backgroundBacker = toIdentifier(value) }
 
-    private var iconBacker: ResourceLocation? = null
+    private var iconBacker: Identifier? = null
     var icon: Any?
         get() = iconBacker
         set(value) { iconBacker = toIdentifier(value) }
@@ -93,14 +93,14 @@ class Toast(config: NativeObject) : Toast {
         Client.getMinecraft().toastManager.addToast(this)
     }
 
-    override fun getWantedVisibility(): Toast.Visibility? = visibility
+    override fun getWantedVisibility(): Toast.Visibility = visibility
 
-    override fun update(manager: ToastManager?, time: Long) {
+    override fun update(manager: ToastManager, time: Long) {
        if (startTime == null) {
            startTime = time
        }
 
-        val duration = displayTime * (manager?.notificationDisplayTimeMultiplier ?: 1.0)
+        val duration = displayTime * (manager.notificationDisplayTimeMultiplier ?: 1.0)
         val elapsed = time - startTime!!
         visibility = if (elapsed < duration) Toast.Visibility.SHOW else Toast.Visibility.HIDE
     }
@@ -123,7 +123,7 @@ class Toast(config: NativeObject) : Toast {
                 context.blitSprite(RenderPipelines.GUI_TEXTURED, it, 0, 0, width(), height())
             }
 
-            iconBacker?.let { it: ResourceLocation ->
+            iconBacker?.let { it: Identifier ->
                 // RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
                 val iconSize = height() - ICON_PADDING * 2
                 context.blitSprite(RenderPipelines.GUI_TEXTURED, it, ICON_PADDING,ICON_PADDING, iconSize,iconSize)
@@ -146,10 +146,10 @@ class Toast(config: NativeObject) : Toast {
     private companion object {
         private const val ICON_PADDING = 7
 
-        private fun toIdentifier(value: Any?): ResourceLocation? = when (value) {
+        private fun toIdentifier(value: Any?): Identifier? = when (value) {
             is Image -> value.getIdOrRegister()
             is CharSequence -> value.toString().toIdentifier()
-            is ResourceLocation -> value
+            is Identifier -> value
             null -> null
             else -> throw IllegalArgumentException(
                 "Toast \"background\" must be an Image or a string corresponding to a resource identifier"

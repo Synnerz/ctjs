@@ -7,10 +7,10 @@ import net.minecraft.client.renderer.entity.player.AvatarRenderer
 import net.minecraft.client.model.geom.ModelLayerLocation
 import net.minecraft.client.model.geom.ModelLayers
 import net.minecraft.client.renderer.entity.ArmorModelSet
-import net.minecraft.client.model.PlayerModel
 import net.minecraft.client.renderer.entity.state.AvatarRenderState
 import net.minecraft.client.renderer.state.CameraRenderState
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.model.player.PlayerModel
 import net.minecraft.client.renderer.entity.layers.ArrowLayer
 import net.minecraft.client.renderer.entity.layers.BeeStingerLayer
 import net.minecraft.client.renderer.entity.layers.CapeLayer
@@ -94,13 +94,13 @@ internal class CTPlayerRenderer(
     }
 
     override fun submitNameTag(
-        playerEntityRenderState: AvatarRenderState?,
-        matrixStack: PoseStack?,
-        orderedRenderCommandQueue: SubmitNodeCollector?,
-        cameraRenderState: CameraRenderState?
+        avatarRenderState: AvatarRenderState,
+        poseStack: PoseStack,
+        submitNodeCollector: SubmitNodeCollector,
+        cameraRenderState: CameraRenderState
     ) {
         if (showNametag)
-            super.submitNameTag(playerEntityRenderState, matrixStack, orderedRenderCommandQueue, cameraRenderState)
+            super.submitNameTag(avatarRenderState, poseStack, submitNodeCollector, cameraRenderState)
     }
 
     private fun reset() {

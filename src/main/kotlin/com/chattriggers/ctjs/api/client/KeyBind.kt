@@ -11,7 +11,7 @@ import com.chattriggers.ctjs.internal.utils.asMixin
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.KeyMapping
 import net.minecraft.client.resources.language.I18n
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.apache.commons.lang3.ArrayUtils
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -51,7 +51,7 @@ class KeyBind {
             if (!categoryList.stream().anyMatch { it.id.path.equals(category) }) {
                 uniqueCategories[category] = 0
             }
-            val keyCategory = KeyMapping.Category.register(ResourceLocation.parse(category))
+            val keyCategory = KeyMapping.Category.register(Identifier.parse(category))
             uniqueCategories[category] = uniqueCategories[category]!! + 1
             keyBinding = KeyMapping(description, keyCode, keyCategory)
 

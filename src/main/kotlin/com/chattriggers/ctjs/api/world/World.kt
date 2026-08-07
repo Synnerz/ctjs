@@ -31,6 +31,7 @@ import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.particles.SculkChargeParticleOptions
 import net.minecraft.core.particles.ShriekParticleOption
 import net.minecraft.core.particles.ColorParticleOption
+import net.minecraft.core.particles.ParticleType
 import net.minecraft.core.particles.VibrationParticleOption
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.level.LightLayer
@@ -74,8 +75,8 @@ object World {
     @JvmStatic
     fun getDifficulty(): Settings.Difficulty? = toMC()?.difficulty?.let(Settings.Difficulty::fromMC)
 
-    @JvmStatic
-    fun getMoonPhase(): Int = toMC()?.moonPhase ?: -1
+//    @JvmStatic
+//    fun getMoonPhase(): Int = toMC()?.moonPhase ?: -1
 
     /**
      * Gets the [Block] at a location in the world.
@@ -302,7 +303,7 @@ object World {
          *
          * @return the array of name strings
          */
-        fun getParticleNames(): List<String> = BuiltInRegistries.PARTICLE_TYPE.registryKeySet().map { it.location().path }.toList()
+        fun getParticleNames(): List<String> = BuiltInRegistries.PARTICLE_TYPE.registryKeySet().map { it.identifier().path }.toList()
 
         /**
          * Spawns a particle into the world with the given attributes,
@@ -326,7 +327,7 @@ object World {
             ySpeed: Double,
             zSpeed: Double,
         ): Particle? {
-            val particleType = BuiltInRegistries.PARTICLE_TYPE.getValue(particle.toIdentifier())
+            val particleType = BuiltInRegistries.PARTICLE_TYPE.getValue(particle.toIdentifier()) as? ParticleType<*>?
 
             requireNotNull(particleType) {
                 "Invalid particle parameter"

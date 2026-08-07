@@ -5,7 +5,8 @@ import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.platform.DestFactor
 import com.mojang.blaze3d.platform.SourceFactor
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderSetup
+import net.minecraft.client.renderer.rendertype.RenderType
 
 object LegacyPipelineBuilder {
     private val layerList = mutableMapOf<String, RenderType>()
@@ -78,21 +79,21 @@ object LegacyPipelineBuilder {
         return pipeline
     }
 
-    fun layer(): RenderType {
-        if (layerList.containsKey(state())) return layerList[state()]!!
-
-        val layer = RenderType.create(
-            "ctjs/custom/layer${hashCode()}",
-            1536,
-            build(),
-            RenderType.CompositeState
-                .builder()
-                .createCompositeState(false)
-        )
-        layerList[state()] = layer
-
-        return layer
-    }
+//    fun layer(): RenderType {
+//        if (layerList.containsKey(state())) return layerList[state()]!!
+//
+//        val layer = RenderType.create(
+//            "ctjs/custom/layer${hashCode()}",
+//            1536,
+//            build(),
+//            RenderType.CompositeState
+//                .builder()
+//                .createCompositeState(false)
+//        )
+//        layerList[state()] = layer
+//
+//        return layer
+//    }
 
     fun state(): String {
         return "LegacyPipelineBuilder[" +

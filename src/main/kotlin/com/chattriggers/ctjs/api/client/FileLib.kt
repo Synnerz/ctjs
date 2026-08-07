@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.client
 
 import com.chattriggers.ctjs.CTJS
-import net.minecraft.Util
+import net.minecraft.util.Util
 import java.io.*
 import java.net.UnknownHostException
 import java.nio.charset.Charset

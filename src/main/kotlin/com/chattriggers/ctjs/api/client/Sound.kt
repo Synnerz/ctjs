@@ -13,11 +13,11 @@ import com.chattriggers.ctjs.internal.utils.asMixin
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance
 import net.minecraft.client.resources.sounds.Sound.Type
 import net.minecraft.client.sounds.WeighedSoundEvents
+import net.minecraft.resources.Identifier
 import net.minecraft.server.packs.resources.ResourceMetadata
 import net.minecraft.server.packs.metadata.MetadataSectionType
 import net.minecraft.sounds.SoundSource
 import net.minecraft.sounds.SoundEvent
-import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.packs.PackLocationInfo
 import net.minecraft.server.packs.PackResources
 import net.minecraft.server.packs.PackType
@@ -55,7 +55,7 @@ import kotlin.io.path.nameWithoutExtension
  * @param config the JavaScript config object
  */
 class Sound(private val config: NativeObject) {
-    private lateinit var identifier: ResourceLocation
+    private lateinit var identifier: Identifier
     private lateinit var soundImpl: SoundImpl
     private lateinit var sound: MCSound
     private var isCustom = false
@@ -84,7 +84,7 @@ class Sound(private val config: NativeObject) {
             soundManagerAccessor.soundCache[identifier.withPrefix("sounds/").withSuffix(".ogg")] =
                 resource
         } else {
-            identifier = ResourceLocation.parse(source)
+            identifier = Identifier.parse(source)
         }
 
         soundImpl = SoundImpl(SoundEvent.createVariableRangeEvent(identifier), soundData.category.toMC(), soundData.attenuationType.toMC())
@@ -318,8 +318,8 @@ class Sound(private val config: NativeObject) {
         play()
     }
 
-    private fun makeIdentifier(source: String): ResourceLocation {
-        return ResourceLocation.fromNamespaceAndPath(
+    private fun makeIdentifier(source: String): Identifier {
+        return Identifier.fromNamespaceAndPath(
             CTJS.MOD_ID,
             Path(source).nameWithoutExtension.lowercase().filter { it in validIdentChars } + "_${counter++}",
         )
@@ -506,11 +506,11 @@ class Sound(private val config: NativeObject) {
             throw UnsupportedOperationException()
         }
 
-        override fun getRootResource(vararg segments: String?): IoSupplier<InputStream>? {
+        override fun getRootResource(vararg segments: String): IoSupplier<InputStream>? {
             throw UnsupportedOperationException()
         }
 
-        override fun getResource(type: PackType, id: ResourceLocation): IoSupplier<InputStream>? {
+        override fun getResource(type: PackType, id: Identifier): IoSupplier<InputStream>? {
             throw UnsupportedOperationException()
         }
 
@@ -527,7 +527,7 @@ class Sound(private val config: NativeObject) {
             throw UnsupportedOperationException()
         }
 
-        override fun <T : Any?> getMetadataSection(metaReader: MetadataSectionType<T>?): T? {
+        override fun <T : Any> getMetadataSection(metaReader: MetadataSectionType<T>): T? {
             throw UnsupportedOperationException()
         }
 

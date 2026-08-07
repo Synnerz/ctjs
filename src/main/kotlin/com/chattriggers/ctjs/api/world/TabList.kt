@@ -18,7 +18,7 @@ import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.world.scores.DisplaySlot
 import net.minecraft.world.scores.Objective
 import net.minecraft.network.chat.Component
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.minecraft.world.level.GameType
 import java.util.*
 import java.util.concurrent.CompletableFuture

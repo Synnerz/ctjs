@@ -17,13 +17,15 @@ abstract class Action(var slot: Int, var windowId: Int) {
     internal abstract fun complete()
 
     protected fun doClick(button: Int, mode: ClickType) {
-        Client.getMinecraft().gameMode?.handleInventoryMouseClick(
-            windowId,
-            slot,
-            button,
-            mode,
-            Player.toMC(),
-        )
+        Player.toMC()?.let {
+            Client.getMinecraft().gameMode?.handleInventoryMouseClick(
+                windowId,
+                slot,
+                button,
+                mode,
+                it,
+            )
+        }
     }
 
     companion object {

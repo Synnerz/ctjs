@@ -50,11 +50,11 @@ import net.minecraft.commands.arguments.ColorArgument
 import net.minecraft.commands.arguments.CompoundTagArgument
 import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.GameModeArgument
+import net.minecraft.commands.arguments.IdentifierArgument
 import net.minecraft.commands.arguments.MessageArgument
 import net.minecraft.commands.arguments.NbtPathArgument
 import net.minecraft.commands.arguments.NbtTagArgument
 import net.minecraft.commands.arguments.RangeArgument
-import net.minecraft.commands.arguments.ResourceLocationArgument
 import net.minecraft.commands.arguments.SlotArgument
 import net.minecraft.commands.arguments.TimeArgument
 import net.minecraft.commands.arguments.UuidArgument
@@ -72,6 +72,8 @@ import net.minecraft.commands.arguments.item.ItemArgument
 import net.minecraft.commands.arguments.item.ItemInput
 import net.minecraft.commands.arguments.item.ItemPredicateArgument
 import net.minecraft.network.chat.Component
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec2
 import net.minecraft.world.phys.Vec3
@@ -386,7 +388,7 @@ object DynamicCommands : CommandCollection() {
             "minecraft:overworld_caves",
         )
     ) { name ->
-        Entity.DimensionType.entries.first { it.toMC().location().toString() == name }
+        Entity.DimensionType.entries.first { it.toMC().identifier().toString() == name }
     }
 
     /**
@@ -499,7 +501,7 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:resource">minecraft:resource</a>
      */
     @JvmStatic
-    fun resource() = ResourceLocationArgument.id()
+    fun resource() = IdentifierArgument.id()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:rotation">minecraft:rotation</a>
@@ -697,7 +699,7 @@ object DynamicCommands : CommandCollection() {
     private fun getMockCommandSource(): CommandSourceStack {
         return CommandSourceStack(
             object : CommandSource {
-                override fun sendSystemMessage(message: Component?) {
+                override fun sendSystemMessage(message: Component) {
                     ChatLib.chat(message)
                 }
                 override fun acceptsSuccess() = true
@@ -706,11 +708,11 @@ object DynamicCommands : CommandCollection() {
             },
             Player.getPos().toVec3d(),
             Player.getRotation(),
-            null,
-            0,
+            null as ServerLevel,
+            { true }, // TODO: figure out if `true` should be returned or `false`
             Player.getName(),
             Player.getDisplayName(),
-            null,
+            null as MinecraftServer,
             Player.toMC(),
         )
     }
@@ -748,16 +750,17 @@ object DynamicCommands : CommandCollection() {
     }
 
     data class BlockPredicateWrapper(val impl: BlockPredicateArgument.Result) {
-        fun test(blockPos: BlockPos): Boolean {
-            return impl.test(BlockInWorld(World.toMC(), blockPos.toMC(), true))
-        }
+        fun test(blockPos: BlockPos): Boolean = World.toMC()?.let {
+            impl.test(BlockInWorld(it, blockPos.toMC(), true))
+        } ?: false
 
         override fun toString() = "BlockPredicateArgument"
     }
 
     data class BlockStateArgumentWrapper(val impl: BlockInput) {
-        fun test(blockPos: BlockPos): Boolean =
-            impl.test(BlockInWorld(World.toMC(), blockPos.toMC(), true))
+        fun test(blockPos: BlockPos): Boolean = World.toMC()?.let {
+            impl.test(BlockInWorld(it, blockPos.toMC(), true))
+        } ?: false
 
         override fun toString() = "BlockStateArgument"
     }

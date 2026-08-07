@@ -21,7 +21,7 @@ import net.minecraft.network.chat.FormattedText
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.util.StringDecomposer
 import org.mozilla.javascript.Context
@@ -324,7 +324,7 @@ class TextComponent private constructor(
 
         constructor(text: String, style: Style) : this(PartContent(text, style))
 
-        override fun getContents(): ComponentContents? = content
+        override fun getContents(): ComponentContents = content
 
         override fun getString(): String = text
 
@@ -389,12 +389,15 @@ class TextComponent private constructor(
 
     // Must be a separate class since Text and TextContent have an identical "visit" method which fails loom remapping
     private class PartContent(val text: String, val style_: Style) : ComponentContents {
-        override fun <T : Any?> visit(visitor: FormattedText.ContentConsumer<T>): Optional<T> = visitor.accept(text)
+        override fun <T : Any> visit(visitor: FormattedText.ContentConsumer<T>): Optional<T> = visitor.accept(text)
 
         override fun codec(): MapCodec<out ComponentContents> = CODEC
 
-        override fun <T> visit(visitor: FormattedText.StyledContentConsumer<T>, style: Style): Optional<T> {
-            return visitor.accept(this.style_.applyTo(style), text)
+        override fun <T : Any> visit(
+            styledContentConsumer: FormattedText.StyledContentConsumer<T>,
+            style: Style
+        ): Optional<T> {
+            return styledContentConsumer.accept(this.style_.applyTo(style), text)
         }
 
         // override fun getType(): TextContent.Type<*> = TextContent.Type(CODEC, "${CTJS.MOD_ID}_part")
@@ -459,7 +462,7 @@ class TextComponent private constructor(
                 .withFont(
                     FontDescription.Resource(
                         when (val font = obj["font"]) {
-                            null -> ResourceLocation.withDefaultNamespace("default")
+                            null -> Identifier.withDefaultNamespace("default")
                             is CharSequence -> font.toString().toIdentifier()
                             else -> error("Expected \"font\" key to be a String")
                         }
@@ -553,7 +556,7 @@ class TextComponent private constructor(
             return when (hoverAction) {
                 HoverEvent.Action.SHOW_TEXT -> HoverEvent.ShowText(TextComponent(value))
                 HoverEvent.Action.SHOW_ITEM -> HoverEvent.ShowItem(parseItemContent(value).item)
-                HoverEvent.Action.SHOW_ENTITY -> HoverEvent.ShowEntity(parseEntityContent(value))
+                HoverEvent.Action.SHOW_ENTITY -> parseEntityContent(value)?.let { HoverEvent.ShowEntity(it) }
             }
         }
 

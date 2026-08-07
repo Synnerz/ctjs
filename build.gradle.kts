@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.HttpURLConnection
 import java.net.URL
 import java.io.ByteArrayOutputStream
+import java.net.URI
 
 buildscript {
     dependencies {
@@ -50,7 +51,7 @@ dependencies {
     modImplementation(include("gg.essential:universalcraft-1.21.9-fabric:451")!!)
 
 //    modApi(libs.modmenu)
-    modRuntimeOnly(libs.devauth)
+//    modRuntimeOnly(libs.devauth)
     dokkaPlugin(libs.versioning)
 
     implementation(kotlin("stdlib-jdk8"))
@@ -153,15 +154,15 @@ tasks {
 
                 sourceLink {
                     localDirectory.set(file("src/main/kotlin"))
-                    remoteUrl.set(URL("https://github.com/ChatTriggers/ctjs/blob/$branch/src/main/kotlin"))
+                    remoteUrl.set(URI.create("https://github.com/ChatTriggers/ctjs/blob/$branch/src/main/kotlin").toURL())
                     remoteLineSuffix.set("#L")
                 }
 
                 externalDocumentationLink {
                     val yarnVersion = libs.versions.yarn.get()
 
-                    url.set(URL("https://maven.fabricmc.net/docs/yarn-$yarnVersion/"))
-                    packageListUrl.set(URL("https://maven.fabricmc.net/docs/yarn-$yarnVersion/element-list"))
+                    url.set(URI.create("https://maven.fabricmc.net/docs/yarn-$yarnVersion/").toURL())
+                    packageListUrl.set(URI.create("https://maven.fabricmc.net/docs/yarn-$yarnVersion/element-list").toURL())
                 }
             }
         }
@@ -207,7 +208,7 @@ tasks {
 }
 
 fun downloadFile(url: String): ByteArray {
-    return (URL(url).openConnection() as HttpURLConnection).apply {
+    return (URI.create(url).toURL().openConnection() as HttpURLConnection).apply {
         requestMethod = "GET"
         doOutput = true
     }.inputStream.readAllBytes()
@@ -215,7 +216,7 @@ fun downloadFile(url: String): ByteArray {
 
 fun getBranch(): String {
     val stdout = ByteArrayOutputStream()
-    exec {
+    providers.exec {
         commandLine("git", "rev-parse", "HEAD")
         standardOutput = stdout
     }
