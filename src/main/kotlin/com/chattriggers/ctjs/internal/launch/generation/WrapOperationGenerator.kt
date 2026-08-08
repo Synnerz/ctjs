@@ -2,15 +2,16 @@ package com.chattriggers.ctjs.internal.launch.generation
 
 import codes.som.koffee.MethodAssembly
 import codes.som.koffee.insns.jvm.*
-import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.internal.launch.At
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.chattriggers.ctjs.internal.launch.WrapOperation
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Modifier
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation as SPWrapOperation
 
 internal class WrapOperationGenerator(
@@ -21,7 +22,7 @@ internal class WrapOperationGenerator(
     override val type = "wrapOperation"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(wrapOperation.method)
+        val method = ctx.findMethod(wrapOperation.method)
 
         val parameters = mutableListOf<Parameter>()
         val returnType: Descriptor
@@ -41,13 +42,11 @@ internal class WrapOperationGenerator(
             when (val atTarget = wrapOperation.at.atTarget) {
                 is At.InvokeTarget -> {
                     val descriptor = atTarget.descriptor
-
-                    val targetClass = Mappings.getMappedClass(descriptor.owner!!.originalDescriptor())
-                        ?: error("Unknown class ${descriptor.owner}")
-                    val targetMethodIsStatic = Utils.findMethod(targetClass, descriptor).second.isStatic
+                    val owner = descriptor.owner ?: error("Unknown class ${descriptor.owner}")
+                    val targetMethodIsStatic = Modifier.isStatic(Utils.findMethod(owner.originalDescriptor(), descriptor).modifiers)
 
                     if (!targetMethodIsStatic)
-                        parameters.add(Parameter(descriptor.owner))
+                        parameters.add(Parameter(owner))
 
                     descriptor.parameters!!.forEach {
                         parameters.add(Parameter(it))
@@ -85,16 +84,16 @@ internal class WrapOperationGenerator(
         }
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             parameters,
             returnType,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPWrapOperation::class.descriptorString(), true).apply {
-            visit("method", signature.targetMethod.toFullDescriptor())
+            visit("method", signature.targetMethod.toJvmDescriptor())
             if (wrapOperation.at != null)
                 visit("at", Utils.createAtAnnotation(wrapOperation.at))
             if (wrapOperation.constant != null)

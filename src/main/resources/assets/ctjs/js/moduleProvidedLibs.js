@@ -1,10 +1,5 @@
 (function(global) {
-    global.Mappings = com.chattriggers.ctjs.api.Mappings;
-
     function getJavaType(clazz) {
-        const mappedName = Mappings.mapClassName(clazz);
-        if (mappedName)
-            return Packages[mappedName.replaceAll("/", ".")]
         return Packages[clazz];
     }
 

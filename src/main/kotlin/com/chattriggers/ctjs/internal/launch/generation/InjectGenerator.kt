@@ -4,10 +4,13 @@ import codes.som.koffee.MethodAssembly
 import codes.som.koffee.insns.jvm.aconst_null
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.chattriggers.ctjs.internal.launch.Inject
+import com.chattriggers.ctjs.internal.launch.generation.Utils.jvmDescriptor
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptor
 import org.objectweb.asm.tree.MethodNode
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable
+import java.lang.reflect.Modifier
 import org.spongepowered.asm.mixin.injection.Inject as SPInject
 
 internal class InjectGenerator(
@@ -18,10 +21,10 @@ internal class InjectGenerator(
     override val type = "inject"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(inject.method)
+        val method = ctx.findMethod(inject.method)
         val parameters = mutableListOf<Parameter>()
 
-        if (mappedMethod.returnType.value == "V") {
+        if (method.returnType.jvmDescriptor() == "V") {
             parameters.add(Parameter(CallbackInfo::class.descriptor()))
         } else {
             parameters.add(Parameter(CallbackInfoReturnable::class.descriptor()))
@@ -32,10 +35,10 @@ internal class InjectGenerator(
         }
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             parameters,
             Descriptor.Primitive.VOID,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
@@ -43,7 +46,7 @@ internal class InjectGenerator(
         node.visitAnnotation(SPInject::class.java.descriptorString(), true).apply {
             if (inject.id != null)
                 visit("id", inject.id)
-            visit("method", signature.targetMethod.toFullDescriptor())
+            visit("method", signature.targetMethod.toJvmDescriptor())
             if (inject.slice != null)
                 visit("slice", inject.slice.map(Utils::createSliceAnnotation))
             if (inject.at != null)

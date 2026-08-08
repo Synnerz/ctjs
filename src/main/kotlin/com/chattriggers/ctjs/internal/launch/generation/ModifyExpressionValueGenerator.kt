@@ -4,8 +4,10 @@ import codes.som.koffee.MethodAssembly
 import com.chattriggers.ctjs.internal.launch.At
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.chattriggers.ctjs.internal.launch.ModifyExpressionValue
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Modifier
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue as SPModifyExpressionValue
 
 internal class ModifyExpressionValueGenerator(
@@ -16,7 +18,7 @@ internal class ModifyExpressionValueGenerator(
     override val type = "modifyExpressionValue"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(modifyExpressionValue.method)
+        val method = ctx.findMethod(modifyExpressionValue.method)
 
         val exprDescriptor = when (val atTarget = modifyExpressionValue.at.atTarget) {
             is At.InvokeTarget -> atTarget.descriptor.returnType
@@ -35,16 +37,16 @@ internal class ModifyExpressionValueGenerator(
             .orEmpty()
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             parameters,
             exprDescriptor,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyExpressionValue::class.descriptorString(), true).apply {
-            visit("method", listOf(signature.targetMethod.toFullDescriptor()))
+            visit("method", listOf(signature.targetMethod.toJvmDescriptor()))
             visit("at", Utils.createAtAnnotation(modifyExpressionValue.at))
             if (modifyExpressionValue.slice != null)
                 visit("slice", modifyExpressionValue.slice.map(Utils::createSliceAnnotation))

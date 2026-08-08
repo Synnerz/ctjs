@@ -3,8 +3,10 @@ package com.chattriggers.ctjs.internal.launch.generation
 import codes.som.koffee.MethodAssembly
 import com.chattriggers.ctjs.internal.launch.At
 import com.chattriggers.ctjs.internal.launch.ModifyReceiver
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Modifier
 import com.llamalad7.mixinextras.injector.ModifyReceiver as SPModifyReceiver
 
 internal class ModifyReceiverGenerator(
@@ -15,7 +17,7 @@ internal class ModifyReceiverGenerator(
     override val type = "modifyReceiver"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(modifyReceiver.method)
+        val method = ctx.findMethod(modifyReceiver.method)
 
         val (owner, extraParams) = when (val atTarget = modifyReceiver.at.atTarget) {
             is At.InvokeTarget -> atTarget.descriptor.owner to atTarget.descriptor.parameters
@@ -36,16 +38,16 @@ internal class ModifyReceiverGenerator(
             modifyReceiver.locals?.map(Utils::getParameterFromLocal).orEmpty()
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             params,
             owner,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyReceiver::class.descriptorString(), true).apply {
-            visit("method", listOf(signature.targetMethod.toFullDescriptor()))
+            visit("method", listOf(signature.targetMethod.toJvmDescriptor()))
             visit("at", Utils.createAtAnnotation(modifyReceiver.at))
             if (modifyReceiver.slice != null)
                 visit("slice", listOf(modifyReceiver.slice.map(Utils::createSliceAnnotation)))

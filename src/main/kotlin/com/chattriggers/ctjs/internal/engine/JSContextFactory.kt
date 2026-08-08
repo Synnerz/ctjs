@@ -1,7 +1,5 @@
 package com.chattriggers.ctjs.internal.engine
 
-import com.chattriggers.ctjs.CTJS
-import com.chattriggers.ctjs.internal.launch.CTJavaObjectMappingProvider
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.Context.FEATURE_LOCATION_INFORMATION_IN_ERROR
 import org.mozilla.javascript.ContextFactory
@@ -28,8 +26,8 @@ object JSContextFactory : ContextFactory() {
             isJavaPrimitiveWrap = false
         }
 
-        if (!CTJS.isDevelopment)
-            cx.javaObjectMappingProvider = CTJavaObjectMappingProvider
+//        if (!CTJS.isDevelopment)
+//            cx.javaObjectMappingProvider = CTJavaObjectMappingProvider
     }
 
     override fun hasFeature(cx: Context?, featureIndex: Int): Boolean {

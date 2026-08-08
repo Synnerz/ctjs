@@ -3,8 +3,10 @@ package com.chattriggers.ctjs.internal.launch.generation
 import codes.som.koffee.MethodAssembly
 import com.chattriggers.ctjs.internal.launch.At
 import com.chattriggers.ctjs.internal.launch.ModifyArg
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Modifier
 import org.spongepowered.asm.mixin.injection.ModifyArg as SPModifyArg
 
 internal class ModifyArgGenerator(
@@ -15,7 +17,7 @@ internal class ModifyArgGenerator(
     override val type = "modifyArg"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(modifyArg.method)
+        val method = ctx.findMethod(modifyArg.method)
 
         // Resolve the target method
         val atTarget = modifyArg.at.atTarget
@@ -37,16 +39,16 @@ internal class ModifyArgGenerator(
         }
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             parameters,
             returnType,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyArg::class.descriptorString(), true).apply {
-            visit("method", listOf(signature.targetMethod.toFullDescriptor()))
+            visit("method", listOf(signature.targetMethod.toJvmDescriptor()))
             if (modifyArg.slice != null)
                 visit("slice", modifyArg.slice)
             visit("at", Utils.createAtAnnotation(modifyArg.at))

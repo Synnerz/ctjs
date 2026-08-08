@@ -31,7 +31,7 @@ internal class DynamicMixinGenerator(private val ctx: GenerationContext, private
 
         val mixinAnnotation = mixinClassNode.visitAnnotation(SPMixin::class.java.descriptorString(), false)
         val mixin = ctx.mixin
-        mixinAnnotation.visit("targets", listOf(ctx.mappedClass.name.value))
+        mixinAnnotation.visit("targets", ctx.mixin.target)
         if (mixin.priority != null)
             mixinAnnotation.visit("priority", mixin.priority)
         if (mixin.remap != null)

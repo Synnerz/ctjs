@@ -3,12 +3,13 @@ package com.chattriggers.ctjs.internal.launch.generation
 import codes.som.koffee.MethodAssembly
 import codes.som.koffee.insns.jvm.*
 import codes.som.koffee.insns.sugar.construct
-import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.internal.launch.At
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.chattriggers.ctjs.internal.launch.Redirect
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Modifier
 import org.spongepowered.asm.mixin.injection.Redirect as SPRedirect
 
 internal class RedirectGenerator(
@@ -19,7 +20,7 @@ internal class RedirectGenerator(
     override val type = "redirect"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(redirect.method)
+        val method = ctx.findMethod(redirect.method)
 
         val parameters = mutableListOf<Parameter>()
         val returnType: Descriptor
@@ -27,12 +28,11 @@ internal class RedirectGenerator(
         when (val atTarget = redirect.at.atTarget) {
             is At.InvokeTarget -> {
                 val descriptor = atTarget.descriptor
+                val owner = descriptor.owner ?: error("Unknown class ${descriptor.owner}")
+                val targetMethodIsStatic = Modifier.isStatic(Utils.findMethod(owner.originalDescriptor(), descriptor).modifiers)
 
-                val targetClass = Mappings.getMappedClass(descriptor.owner!!.originalDescriptor())
-                    ?: error("Unknown class ${descriptor.owner}")
-                val targetMethod = Utils.findMethod(targetClass, descriptor).second
-                if (!targetMethod.isStatic)
-                    parameters.add(Parameter(descriptor.owner))
+                if (!targetMethodIsStatic)
+                    parameters.add(Parameter(owner))
                 descriptor.parameters!!.forEach { parameters.add(Parameter(it)) }
                 returnType = descriptor.returnType!!
             }
@@ -64,16 +64,16 @@ internal class RedirectGenerator(
         }
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             parameters,
             returnType,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPRedirect::class.descriptorString(), true).apply {
-            visit("method", signature.targetMethod.toFullDescriptor())
+            visit("method", signature.targetMethod.toJvmDescriptor())
             if (redirect.slice != null)
                 visit("slice", Utils.createSliceAnnotation(redirect.slice))
             visit("at", Utils.createAtAnnotation(redirect.at))

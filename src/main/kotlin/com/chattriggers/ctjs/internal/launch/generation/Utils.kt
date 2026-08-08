@@ -1,12 +1,10 @@
 package com.chattriggers.ctjs.internal.launch.generation
 
-import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.internal.launch.*
 import com.chattriggers.ctjs.internal.utils.descriptorString
-import net.fabricmc.loader.impl.FabricLoaderImpl
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
-import org.spongepowered.asm.mixin.transformer.ClassInfo
+import java.lang.reflect.Method
 import org.spongepowered.asm.mixin.injection.At as SPAt
 import org.spongepowered.asm.mixin.injection.Constant as SPConstant
 import org.spongepowered.asm.mixin.injection.Slice as SPSlice
@@ -65,9 +63,7 @@ internal object Utils {
             if (constant.stringValue != null)
                 visit("stringValue", constant.stringValue)
             if (constant.classValue != null) {
-                val name = Mappings.getMappedClassName(constant.classValue)
-                    ?: error("Unknown class \"${constant.classValue}\"")
-                visit("classValue", Type.getObjectType(name))
+                visit("classValue", Type.getObjectType(constant.classValue))
             }
             if (constant.ordinal != null)
                 visit("ordinal", constant.ordinal)
@@ -81,9 +77,11 @@ internal object Utils {
     }
 
     // FIXME: fix access wideners not working probably
-    fun widenField(mappedClass: Mappings.MappedClass, fieldName: String, isMutable: Boolean) {
-        val field = mappedClass.fields[fieldName]
-            ?: error("Unable to find field $fieldName in class ${mappedClass.name.original}")
+    fun widenField(
+//        mappedClass: Mappings.MappedClass, fieldName: String, isMutable: Boolean
+    ) {
+//        val field = mappedClass.fields[fieldName]
+//            ?: error("Unable to find field $fieldName in class ${mappedClass.name.original}")
 
 //        FabricLoaderImpl.INSTANCE.accessWidener.visitField(
 //            mappedClass.name.value,
@@ -105,12 +103,12 @@ internal object Utils {
     }
 
     fun widenMethod(
-        mappedClass: Mappings.MappedClass,
-        methodName: String,
-        isMutable: Boolean,
+//        mappedClass: Mappings.MappedClass,
+//        methodName: String,
+//        isMutable: Boolean,
     ) {
-        val descriptor = Descriptor.Parser(methodName).parseMethod(full = false)
-        val mappedMethod = findMethod(mappedClass, descriptor).first
+//        val descriptor = Descriptor.Parser(methodName).parseMethod(full = false)
+//        val mappedMethod = findMethod(mappedClass, descriptor).first
 
 //        FabricLoaderImpl.INSTANCE.accessWidener.visitMethod(
 //            mappedClass.name.value,
@@ -132,46 +130,81 @@ internal object Utils {
     }
 
     fun findMethod(
-        mappedClass: Mappings.MappedClass,
+        className: String,
         descriptor: Descriptor.Method,
-    ): Pair<Mappings.MappedMethod, ClassInfo.Method> {
+    ): Method {
+        val clazz = Class.forName(className)
         val parameters = descriptor.parameters
 
-        val classInfo = ClassInfo.forName(mappedClass.name.value)
-        val mappedMethods = mappedClass.findMethods(descriptor.name, classInfo)
-            ?: error("Cannot find method ${descriptor.name} in class ${mappedClass.name.original}")
-
-        var value: Pair<Mappings.MappedMethod, ClassInfo.Method>? = null
-
-        for (method in mappedMethods) {
-            if (parameters != null) {
-                if (method.parameters.size != parameters.size)
-                    continue
-
-                if (method.parameters.zip(parameters).any { it.first.type.original != it.second.originalDescriptor() })
-                    continue
+        val methods = sequence {
+            yieldAll(clazz.hierarchy())
+        }
+            .flatMap { it.declaredMethods.asSequence() }
+            .filter { it.name == descriptor.name }
+            .filter {
+                parameters == null ||
+                        (
+                                it.parameterCount == parameters.size &&
+                                        it.parameterTypes.zip(parameters).all { (type, parameter) ->
+                                            type.jvmDescriptor() == parameter.originalDescriptor()
+                                        }
+                                )
             }
+            .toList()
 
-            val result = classInfo.findMethodInHierarchy(
-                method.name.value,
-                method.toDescriptor(),
-                ClassInfo.SearchType.ALL_CLASSES,
-                ClassInfo.INCLUDE_ALL or ClassInfo.INCLUDE_INITIALISERS,
-            ) ?: continue
+        return when (methods.size) {
+            0 -> error(
+                "Unable to match method $descriptor in class $className"
+            )
 
-            if (value != null)
-                error(
-                    "Multiple methods match name ${descriptor.name} in class ${mappedClass.name.original}, please " +
-                        "provide a method descriptor"
-                )
+            1 -> methods.single()
 
-            value = method to result
+            else -> error(
+                "Multiple methods match name ${descriptor.name} in class $className, " +
+                        "please provide a method descriptor"
+            )
+        }
+    }
+
+    private fun Class<*>.hierarchy(): Sequence<Class<*>> = sequence {
+        yield(this@hierarchy)
+
+        superclass?.let {
+            yieldAll(it.hierarchy())
         }
 
-        if (value != null)
-            return value
+        for (interfaceClass in interfaces) {
+            yieldAll(interfaceClass.hierarchy())
+        }
+    }
 
-        error("Unable to match method $descriptor in class ${mappedClass.name.original}")
+    fun Method.toJvmDescriptor(): String =
+        buildString {
+            append('(')
+            parameterTypes.forEach {
+                append(it.jvmDescriptor())
+            }
+            append(')')
+            append(returnType.jvmDescriptor())
+        }
+
+    fun Class<*>.jvmDescriptor(): String = when {
+        isPrimitive -> when (this) {
+            java.lang.Void.TYPE -> "V"
+            java.lang.Boolean.TYPE -> "Z"
+            java.lang.Byte.TYPE -> "B"
+            java.lang.Character.TYPE -> "C"
+            java.lang.Short.TYPE -> "S"
+            java.lang.Integer.TYPE -> "I"
+            java.lang.Long.TYPE -> "J"
+            java.lang.Float.TYPE -> "F"
+            java.lang.Double.TYPE -> "D"
+            else -> error("Unknown primitive type: $this")
+        }
+
+        isArray -> name.replace('.', '/')
+
+        else -> "L${name.replace('.', '/')};"
     }
 
     fun getParameterFromLocal(local: Local, name: String = "Local"): InjectorGenerator.Parameter {

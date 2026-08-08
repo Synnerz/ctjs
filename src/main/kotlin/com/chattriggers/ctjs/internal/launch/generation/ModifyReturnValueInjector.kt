@@ -3,8 +3,11 @@ package com.chattriggers.ctjs.internal.launch.generation
 import codes.som.koffee.MethodAssembly
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.chattriggers.ctjs.internal.launch.ModifyReturnValue
+import com.chattriggers.ctjs.internal.launch.generation.Utils.jvmDescriptor
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Modifier
 import com.llamalad7.mixinextras.injector.ModifyReturnValue as SPModifyReturnValue
 
 internal class ModifyReturnValueInjector(
@@ -15,8 +18,8 @@ internal class ModifyReturnValueInjector(
     override val type = "modifyReturnValue"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(modifyReturnValue.method)
-        val returnType = Descriptor.Parser(mappedMethod.returnType.value).parseType(full = true)
+        val method = ctx.findMethod(modifyReturnValue.method)
+        val returnType = Descriptor.Parser(method.returnType.jvmDescriptor()).parseType(full = true)
         check(returnType != Descriptor.Primitive.VOID) {
             "ModifyReturnValue mixin cannot target a void method"
         }
@@ -26,16 +29,16 @@ internal class ModifyReturnValueInjector(
             .orEmpty()
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             parameters,
             returnType,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyReturnValue::class.descriptorString(), true).apply {
-            visit("method", listOf(signature.targetMethod.toFullDescriptor()))
+            visit("method", listOf(signature.targetMethod.toJvmDescriptor()))
             visit("at", Utils.createAtAnnotation(modifyReturnValue.at))
             if (modifyReturnValue.slice != null)
                 visit("slice", listOf(modifyReturnValue.slice.map(Utils::createSliceAnnotation)))

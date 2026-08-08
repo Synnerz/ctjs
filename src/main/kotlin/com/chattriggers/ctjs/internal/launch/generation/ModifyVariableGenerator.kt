@@ -3,8 +3,10 @@ package com.chattriggers.ctjs.internal.launch.generation
 import codes.som.koffee.MethodAssembly
 import com.chattriggers.ctjs.internal.launch.Local
 import com.chattriggers.ctjs.internal.launch.ModifyVariable
+import com.chattriggers.ctjs.internal.launch.generation.Utils.toJvmDescriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Modifier
 import org.spongepowered.asm.mixin.injection.ModifyVariable as SPModifyVariable
 
 internal class ModifyVariableGenerator(
@@ -15,7 +17,7 @@ internal class ModifyVariableGenerator(
     override val type = "modifyVariable"
 
     override fun getInjectionSignature(): InjectionSignature {
-        val (mappedMethod, method) = ctx.findMethod(modifyVariable.method)
+        val method = ctx.findMethod(modifyVariable.method)
 
         // Construct a temporary local so we can call Utils.getParameterFromLocal
         val tempLocal = Local(
@@ -34,16 +36,16 @@ internal class ModifyVariableGenerator(
         )
 
         return InjectionSignature(
-            mappedMethod,
+            method,
             listOf(parameter.copy(local = null)),
             parameter.descriptor,
-            method.isStatic,
+            Modifier.isStatic(method.modifiers),
         )
     }
 
     override fun attachAnnotation(node: MethodNode, signature: InjectionSignature) {
         node.visitAnnotation(SPModifyVariable::class.descriptorString(), true).apply {
-            visit("method", listOf(signature.targetMethod.toFullDescriptor()))
+            visit("method", listOf(signature.targetMethod.toJvmDescriptor()))
             visit("at", Utils.createAtAnnotation(modifyVariable.at))
             if (modifyVariable.slice != null)
                 visit("slice", Utils.createSliceAnnotation(modifyVariable.slice!!))

@@ -1,7 +1,5 @@
 package com.chattriggers.ctjs.internal.launch
 
-import com.chattriggers.ctjs.api.Mappings
-import com.chattriggers.ctjs.internal.launch.generation.Utils
 import org.objectweb.asm.Type
 
 sealed interface Descriptor {
@@ -55,15 +53,6 @@ sealed interface Descriptor {
         override fun originalDescriptor() = descriptor
 
         override fun mappedDescriptor(): String {
-            // Do not map this class if it is not in a mapped package
-            for (mappedPackage in Mappings.mappedPackages) {
-                if (descriptor.startsWith(mappedPackage)) {
-                    return Mappings.getMappedClassName(descriptor)?.let {
-                        "L$it;"
-                    } ?: error("Unknown class \"$descriptor\"")
-                }
-            }
-
             return descriptor
         }
 
@@ -97,10 +86,7 @@ sealed interface Descriptor {
 
     data class Field(val owner: Object?, val name: String, val type: Descriptor?) : Descriptor {
         override val isType get() = false
-        private val mappedName by lazy {
-            // Default to 'name' in case this field isn't mapped. If not, the Mixin will just fail to apply
-            Mappings.getMappedClass(owner!!.originalDescriptor())?.fields?.get(name)?.name?.value ?: name
-        }
+        private val mappedName = name
 
         init {
             require(type?.isType != false) {
@@ -142,12 +128,7 @@ sealed interface Descriptor {
         val returnType: Descriptor?,
     ) : Descriptor {
         override val isType get() = false
-        private val mappedName by lazy {
-            // Default to 'name' in case this field isn't mapped. If not, the Mixin will just fail to apply
-            Mappings.getMappedClass(owner!!.originalDescriptor())
-                ?.let { Utils.findMethod(it, this) }?.first?.name?.value
-                ?: name
-        }
+        private val mappedName = name
 
         init {
             parameters?.forEach {

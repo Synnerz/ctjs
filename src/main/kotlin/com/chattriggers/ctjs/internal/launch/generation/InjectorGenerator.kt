@@ -7,7 +7,6 @@ import codes.som.koffee.insns.jvm.*
 import codes.som.koffee.insns.sugar.JumpCondition
 import codes.som.koffee.insns.sugar.ifStatement
 import com.chattriggers.ctjs.CTJS
-import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.launch.Descriptor
 import com.chattriggers.ctjs.internal.launch.InvokeDynamicSupport
@@ -15,6 +14,7 @@ import com.chattriggers.ctjs.internal.launch.Local
 import com.chattriggers.ctjs.internal.utils.descriptor
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import org.objectweb.asm.tree.MethodNode
+import java.lang.reflect.Method
 
 internal abstract class InjectorGenerator(protected val ctx: GenerationContext, val id: Int) {
     abstract val type: String
@@ -56,7 +56,7 @@ internal abstract class InjectorGenerator(protected val ctx: GenerationContext, 
         if (isStatic)
             modifiers += classAssembly.static
 
-        val nameForInjection = targetMethod.name.original.replace('<', '$').replace('>', '$')
+        val nameForInjection = targetMethod.name.replace('<', '$').replace('>', '$')
         val methodNode = classAssembly.method(
             modifiers,
             "${CTJS.MOD_ID}_${type}_${nameForInjection}_${counter++}",
@@ -212,7 +212,7 @@ internal abstract class InjectorGenerator(protected val ctx: GenerationContext, 
     )
 
     data class InjectionSignature(
-        val targetMethod: Mappings.MappedMethod,
+        val targetMethod: Method,
         val parameters: List<Parameter>,
         val returnType: Descriptor,
         val isStatic: Boolean,
