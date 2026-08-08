@@ -29,10 +29,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build
-        run: |
-          java -version
-          ./gradlew --version
-          ./gradlew --no-daemon build -Pfull
+        run: ./gradlew --no-daemon build -Pfull
 
       - name: Get Short SHA
         id: sha
@@ -42,7 +39,7 @@ jobs:
         run: |
           mkdir temp-dir
           cp build/libs/* temp-dir
-          cp build/generated/ksp/main/resources/* temp-dir
+#          cp build/generated/ksp/main/resources/* temp-dir
 
       - name: Publish Artifacts
         uses: actions/upload-artifact@v4
