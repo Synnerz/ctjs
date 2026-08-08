@@ -42,7 +42,7 @@
     loadClass("java.util.ArrayList");
     loadClass("java.util.HashMap");
     loadClass("gg.essential.universal.UKeyboard", "Keyboard");
-    loadClass("net.minecraft.util.Hand");
+//    loadClass("net.minecraft.util.Hand");
 
     loadClass("com.chattriggers.ctjs.api.client.Client");
     loadClass("com.chattriggers.ctjs.api.client.CPS");
