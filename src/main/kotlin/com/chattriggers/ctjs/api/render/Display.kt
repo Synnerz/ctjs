@@ -1,7 +1,7 @@
 package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.internal.utils.getOption
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.mozilla.javascript.NativeObject
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -137,7 +137,7 @@ class Display() {
         this.minWidth = minWidth
     }
 
-    fun draw(ctx: GuiGraphics) {
+    fun draw(ctx: GuiGraphicsExtractor) {
         width = lines.maxOfOrNull { it.getWidth() }?.coerceAtLeast(minWidth) ?: minWidth
 
         val textBackgroundWidth = when (background) {

@@ -1,17 +1,5 @@
 package com.chattriggers.ctjs.internal.engine
 
-import com.chattriggers.ctjs.internal.engine.CTEvents.BreakBlockCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.GuiMouseDragCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.MouseButtonCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.MouseDraggedCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.MouseScrollCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.NetworkCommandDispatcherRegisterCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.PacketReceivedCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.RenderBlockEntityCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.RenderEntityCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.RenderOverlayCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.RenderWorldCallback
-import com.chattriggers.ctjs.internal.engine.CTEvents.VoidCallback
 import com.chattriggers.ctjs.MCBlockEntity
 import com.chattriggers.ctjs.MCBlockPos
 import com.chattriggers.ctjs.MCEntity
@@ -19,10 +7,10 @@ import com.mojang.brigadier.CommandDispatcher
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.event.Event
 import net.fabricmc.fabric.api.event.EventFactory
-import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.screens.Screen
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.protocol.Packet
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo
 
@@ -48,7 +36,7 @@ internal object CTEvents {
     }
 
     fun interface RenderOverlayCallback {
-        fun render(context: GuiGraphics, matrixStack: PoseStack, partialTicks: Float)
+        fun render(context: GuiGraphicsExtractor, matrixStack: PoseStack, partialTicks: Float)
     }
 
     fun interface PacketReceivedCallback {

@@ -3,7 +3,6 @@ import org.jetbrains.dokka.versioning.VersioningConfiguration
 import org.jetbrains.dokka.versioning.VersioningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.HttpURLConnection
-import java.net.URL
 import java.io.ByteArrayOutputStream
 import java.net.URI
 
@@ -38,17 +37,12 @@ repositories {
 dependencies {
     // To change the versions see the gradle/libs.versions.toml
     minecraft(libs.minecraft)
-    mappings(loom.officialMojangMappings())
-    modImplementation(libs.bundles.fabric)
+    implementation(libs.bundles.fabric)
 
-    modImplementation(libs.bundles.included) { include(this) }
-//    modImplementation(libs.bundles.essential) {
-//        exclude("gg.essential", "universalcraft-1.18.1-fabric")
-//        include(this)
-//    }
-    implementation(include("gg.essential:vigilance:312")!!)
-    implementation(include("gg.essential:elementa:714")!!)
-    modImplementation(include("gg.essential:universalcraft-1.21.9-fabric:451")!!)
+    implementation(libs.bundles.included) { include(this) }
+    implementation(include("gg.essential:vigilance:314")!!)
+    implementation(include("gg.essential:elementa:750")!!)
+    implementation(include("gg.essential:universalcraft-26.1-fabric:511")!!)
 
 //    modApi(libs.modmenu)
 //    modRuntimeOnly(libs.devauth)
@@ -70,11 +64,12 @@ base {
 java {
     withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 apiValidation {
+    validationDisabled = true
     ignoredProjects += "typing-generator"
     ignoredPackages += "com.chattriggers.ctjs.internal"
 }
@@ -82,12 +77,10 @@ apiValidation {
 tasks {
     processResources {
         val flkVersion = libs.versions.fabric.kotlin.get()
-        val yarnVersion = libs.versions.yarn.get()
         val fapiVersion = libs.versions.fabric.api.get()
         val loaderVersion = libs.versions.loader.get()
 
         inputs.property("version", project.version)
-        inputs.property("yarn_mappings", yarnVersion)
         inputs.property("fabric_kotlin_version", flkVersion)
         inputs.property("fabric_api_version", fapiVersion)
         inputs.property("loader_version", loaderVersion)
@@ -95,7 +88,6 @@ tasks {
         filesMatching("fabric.mod.json") {
             expand(
                 "version" to project.version,
-                "yarn_mappings" to yarnVersion,
                 "fabric_kotlin_version" to flkVersion,
                 "fabric_api_version" to fapiVersion,
                 "loader_version" to loaderVersion
@@ -104,13 +96,13 @@ tasks {
     }
 
     withType<JavaCompile>().configureEach {
-        options.release.set(21)
+        options.release.set(25)
     }
 
     kotlin {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
-            freeCompilerArgs = listOf("-Xcontext-receivers")
+            jvmTarget.set(JvmTarget.JVM_25)
+            freeCompilerArgs = listOf("-Xcontext-parameters")
         }
     }
 
@@ -145,7 +137,7 @@ tasks {
         val branch = getBranch()
         dokkaSourceSets {
             configureEach {
-                jdkVersion.set(21)
+                jdkVersion.set(25)
 
                 perPackageOption {
                     matchingRegex.set("com\\.chattriggers\\.ctjs\\.internal(\$|\\.).*")
@@ -158,12 +150,13 @@ tasks {
                     remoteLineSuffix.set("#L")
                 }
 
-                externalDocumentationLink {
-                    val yarnVersion = libs.versions.yarn.get()
-
-                    url.set(URI.create("https://maven.fabricmc.net/docs/yarn-$yarnVersion/").toURL())
-                    packageListUrl.set(URI.create("https://maven.fabricmc.net/docs/yarn-$yarnVersion/element-list").toURL())
-                }
+                // maybe add mcsrc link to the version
+//                externalDocumentationLink {
+//                    val yarnVersion = libs.versions.yarn.get()
+//
+//                    url.set(URI.create("https://maven.fabricmc.net/docs/yarn-$yarnVersion/").toURL())
+//                    packageListUrl.set(URI.create("https://maven.fabricmc.net/docs/yarn-$yarnVersion/element-list").toURL())
+//                }
             }
         }
 

@@ -2,10 +2,7 @@ package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.message.ChatLib;
 import net.minecraft.client.gui.components.ChatComponent;
-import net.minecraft.client.GuiMessage;
-import net.minecraft.client.GuiMessageTag;
-import net.minecraft.network.chat.MessageSignature;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.multiplayer.chat.GuiMessage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,7 +25,7 @@ public class ChatComponentMixin {
 
     // TODO: is it this or addVisibleMessage
     @Inject(
-        method = "addMessageToQueue(Lnet/minecraft/client/GuiMessage;)V",
+        method = "addMessageToQueue",
         at = @At(
             value = "INVOKE",
             target = "Ljava/util/List;removeLast()Ljava/lang/Object;",

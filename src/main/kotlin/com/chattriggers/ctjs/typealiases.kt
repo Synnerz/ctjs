@@ -26,5 +26,5 @@ typealias MCParticlesMode = net.minecraft.server.level.ParticleStatus
 typealias MCDimensionType = net.minecraft.world.level.dimension.DimensionType
 typealias MCVertexFormat = com.mojang.blaze3d.vertex.VertexFormat
 typealias MCChatVisibility = net.minecraft.world.entity.player.ChatVisiblity
-typealias MCClickType = net.minecraft.world.inventory.ClickType
+typealias MCClickType = net.minecraft.world.inventory.ContainerInput
 typealias MCScore = net.minecraft.world.scores.Score

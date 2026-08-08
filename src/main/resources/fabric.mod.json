@@ -30,7 +30,6 @@
         "fabric-language-kotlin": ">=$fabric_kotlin_version"
     },
     "custom": {
-        "ctjs:yarn-mappings": "$yarn_mappings",
         "modmenu": {
             "links": {
                 "modmenu.discord": "https://discord.gg/chattriggers"

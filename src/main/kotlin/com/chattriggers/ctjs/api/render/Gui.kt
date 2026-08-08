@@ -10,7 +10,7 @@ import gg.essential.universal.UKeyboard
 import gg.essential.universal.UMatrixStack
 import gg.essential.universal.UScreen
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Button
 
 class Gui @JvmOverloads constructor(
@@ -238,7 +238,7 @@ class Gui @JvmOverloads constructor(
      */
     override fun onMouseClicked(mouseX: Double, mouseY: Double, mouseButton: Int) {
         super.onMouseClicked(mouseX, mouseY, mouseButton)
-        onClick?.trigger(arrayOf(mouseX, mouseY, mouseButton))
+        onClick?.trigger(arrayOf<Number>(mouseX, mouseY, mouseButton))
     }
 
     /**
@@ -248,7 +248,7 @@ class Gui @JvmOverloads constructor(
      */
     override fun onMouseReleased(mouseX: Double, mouseY: Double, state: Int) {
         super.onMouseReleased(mouseX, mouseY, state)
-        onMouseReleased?.trigger(arrayOf(mouseX, mouseY, state))
+        onMouseReleased?.trigger(arrayOf<Number>(mouseX, mouseY, state))
     }
 
     /**
@@ -276,7 +276,7 @@ class Gui @JvmOverloads constructor(
         super.onDrawScreen(matrixStack, mouseX, mouseY, partialTicks)
 
         @Suppress("UNCHECKED_CAST")
-        val drawContexts = drawContextsField.get(this) as List<GuiGraphics>
+        val drawContexts = drawContextsField.get(this) as List<GuiGraphicsExtractor>
         Renderer.pushMatrix(UMatrixStack(drawContexts.last().pose()))
 
         Renderer.partialTicks = partialTicks
@@ -298,7 +298,7 @@ class Gui @JvmOverloads constructor(
             var char = keyCode.toChar()
             if (modifiers?.isShift != true)
                 char = char.lowercaseChar()
-            onKeyTyped?.trigger(arrayOf(char, keyCode))
+            onKeyTyped?.trigger(arrayOf<Any>(char, keyCode))
         }
     }
 

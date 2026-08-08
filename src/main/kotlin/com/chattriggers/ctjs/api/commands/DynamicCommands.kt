@@ -878,7 +878,7 @@ object DynamicCommands : CommandCollection() {
     }
 
     data class ItemStackArgumentWrapper(private val impl: ItemInput) : Predicate<Item> {
-        val itemType = ItemType(impl.item)
+        val itemType = ItemType(impl.item.value())
 
         override fun test(item: Item) = ItemStack.isSameItemSameComponents(itemType.asItem().toMC(), item.toMC())
 

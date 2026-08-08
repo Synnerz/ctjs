@@ -347,7 +347,7 @@ object World {
                     ParticleTypes.DUST_PILLAR -> BlockParticleOption(ParticleTypes.DUST_PILLAR, blockState)
                     ParticleTypes.ENTITY_EFFECT -> ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 1f, 0f, 0f)
                     ParticleTypes.FALLING_DUST -> BlockParticleOption(ParticleTypes.FALLING_DUST, blockState)
-                    ParticleTypes.ITEM -> ItemParticleOption(ParticleTypes.ITEM, ItemStack(Items.STONE, 1))
+                    ParticleTypes.ITEM -> ItemParticleOption(ParticleTypes.ITEM, Items.STONE)
                     ParticleTypes.SCULK_CHARGE -> SculkChargeParticleOptions(0f)
                     ParticleTypes.SHRIEK -> ShriekParticleOption(0)
                     ParticleTypes.VIBRATION -> VibrationParticleOption(BlockPositionSource(blockPos.toMC()), 0)

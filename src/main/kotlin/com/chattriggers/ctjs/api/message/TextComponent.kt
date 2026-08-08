@@ -24,6 +24,7 @@ import net.minecraft.network.chat.TextColor
 import net.minecraft.resources.Identifier
 import net.minecraft.util.FormattedCharSequence
 import net.minecraft.util.StringDecomposer
+import net.minecraft.world.item.ItemStackTemplate
 import org.mozilla.javascript.Context
 import org.mozilla.javascript.NativeObject
 import org.mozilla.javascript.ScriptRuntime
@@ -202,7 +203,7 @@ class TextComponent private constructor(
                 Client.getMinecraft().connection?.handleSystemChat(ClientboundSystemChatPacket(this, false))
             }
         } else {
-            Player.toMC()?.displayClientMessage(this, false)
+            Player.toMC()?.sendSystemMessage(this)
         }
     }
 
@@ -222,7 +223,7 @@ class TextComponent private constructor(
                 Client.getMinecraft().connection?.handleSystemChat(ClientboundSystemChatPacket(this, true))
             }
         } else {
-            Player.toMC()?.displayClientMessage(this, true)
+            Player.toMC()?.sendOverlayMessage(this)
         }
     }
 
@@ -588,7 +589,7 @@ class TextComponent private constructor(
                 is CharSequence -> ItemType(obj.toString()).asItem().toMC()
                 is HoverEvent.ShowItem -> return obj
                 else -> error("${obj::class} cannot be parsed as an item HoverEvent")
-            }.let(HoverEvent::ShowItem)
+            }.let { HoverEvent.ShowItem(ItemStackTemplate(it.item)) }
         }
 
         private fun parseEntityContent(obj: Any): HoverEvent.EntityTooltipInfo? {

@@ -6,9 +6,10 @@ import com.chattriggers.ctjs.internal.listeners.ClientListener
 import com.chattriggers.ctjs.internal.mixins.ChatComponentAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.fabricmc.fabric.impl.command.client.ClientCommandInternals
-import net.minecraft.client.GuiMessage
-import net.minecraft.client.GuiMessageTag
 import net.minecraft.client.gui.components.ChatComponent
+import net.minecraft.client.multiplayer.chat.GuiMessage
+import net.minecraft.client.multiplayer.chat.GuiMessageSource
+import net.minecraft.client.multiplayer.chat.GuiMessageTag
 import org.mozilla.javascript.regexp.NativeRegExp
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -276,7 +277,7 @@ object ChatLib {
                 chatLineIds.remove(next)
                 for (replacement in replacements) {
                     val message = replacement as? TextComponent ?: TextComponent(replacement)
-                    val line = GuiMessage(next.addedTime, message, null, indicator)
+                    val line = GuiMessage(next.addedTime, message, null, GuiMessageSource.SYSTEM_CLIENT, indicator)
                     if (message.getChatLineId() != -1)
                         chatLineIds[line] = message.getChatLineId()
 
@@ -403,7 +404,7 @@ object ChatLib {
         require(message.getChatLineId() != -1)
 
         val chatGui = Client.getChatGui() ?: return
-        chatGui.addMessage(message)
+        chatGui.addClientSystemMessage(message)
         val newChatLine = chatHudAccessor!!.allMessages[0]
 
         check(message == newChatLine.content()) {

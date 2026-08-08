@@ -1,6 +1,6 @@
 package com.chattriggers.ctjs.api.inventory.action
 
-import net.minecraft.world.inventory.ClickType
+import com.chattriggers.ctjs.MCClickType
 
 class KeyAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     private var key: Int = -1
@@ -18,6 +18,6 @@ class KeyAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     }
 
     override fun complete() {
-        doClick(key, ClickType.SWAP)
+        doClick(key, MCClickType.SWAP)
     }
 }

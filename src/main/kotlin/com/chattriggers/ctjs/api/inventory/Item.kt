@@ -36,7 +36,7 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
 
     constructor(type: ItemType) : this(type.toMC().defaultInstance)
 
-    fun getHolder(): Entity? = mcValue.entityRepresentation?.let(Entity::fromMC)
+//    fun getHolder(): Entity? = mcValue.entityRepresentation?.let(Entity::fromMC)
 
     fun getStackSize(): Int = mcValue.count
 
@@ -118,7 +118,7 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
      */
     @JvmOverloads
     fun draw(x: Float = 0f, y: Float = 0f, scale: Float = 1f, z: Float = 200f) {
-        val itemRenderer = Client.getMinecraft().itemRenderer
+        val itemRenderer = Client.getMinecraft().gameRenderer.itemInHandRenderer
         val itemRenderState = ItemStackRenderState()
 
         Renderer.pushMatrix()

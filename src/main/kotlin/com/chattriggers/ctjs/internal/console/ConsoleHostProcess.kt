@@ -8,9 +8,9 @@ import com.chattriggers.ctjs.internal.engine.CTEvents
 import com.chattriggers.ctjs.internal.engine.JSLoader
 import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
 import net.minecraft.client.KeyMapping
 import com.mojang.blaze3d.platform.InputConstants
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import org.lwjgl.glfw.GLFW
@@ -59,7 +59,7 @@ object ConsoleHostProcess : Initializer {
     }
 
     override fun init() {
-        val keybind = KeyBindingHelper.registerKeyBinding(
+        val keybind = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "ctjs.key.binding.console",
                 InputConstants.Type.KEYSYM,

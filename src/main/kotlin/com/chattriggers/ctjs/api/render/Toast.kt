@@ -9,7 +9,7 @@ import com.chattriggers.ctjs.internal.utils.toIdentifier
 import gg.essential.universal.UMatrixStack
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.RenderPipelines
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.toasts.ToastManager
 import org.mozilla.javascript.*
 import net.minecraft.client.gui.components.toasts.Toast
@@ -105,7 +105,7 @@ class Toast(config: NativeObject) : Toast {
         visibility = if (elapsed < duration) Toast.Visibility.SHOW else Toast.Visibility.HIDE
     }
 
-    override fun render(context: GuiGraphics, textRenderer: Font, startTime: Long) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, font: Font, fullyVisibleForMs: Long) {
         if (customRenderFunction != null) {
             Renderer.withMatrix(UMatrixStack(context.pose()).toMC()) {
                 try {
@@ -133,12 +133,12 @@ class Toast(config: NativeObject) : Toast {
             var textY = ICON_PADDING
 
             titleBacker?.let {
-                context.drawString(textRenderer, it, textX, textY, 0xffffff, false)
-                textY += textRenderer.lineHeight + 1
+                context.text(font, it, textX, textY, 0xffffff, false)
+                textY += font.lineHeight + 1
             }
 
             descriptionBacker?.let {
-                context.drawString(textRenderer, it, textX, textY, 0xffffff, false)
+                context.text(font, it, textX, textY, 0xffffff, false)
             }
         }
     }

@@ -4,8 +4,8 @@ import com.chattriggers.ctjs.api.client.Player
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.render.Renderer
 import com.chattriggers.ctjs.api.render.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.input.MouseButtonEvent
-import net.minecraft.client.gui.GuiGraphics
 import net.minecraft.client.gui.screens.Screen
 
 object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules")) {
@@ -16,7 +16,7 @@ object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules
         var scroll = 0f
     }
 
-    override fun render(ctx: GuiGraphics, mouseY: Int, j: Int, deltaTicks: Float) {
+    override fun extractBackground(ctx: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, a: Float) {
         ctx.pose().pushMatrix()
 
         val middle = Renderer.screen.getWidth() / 2
@@ -32,7 +32,7 @@ object ModulesGui : Screen(net.minecraft.network.chat.Component.literal("Modules
             val rx = Renderer.screen.getWidth() - 20
             val ry = Renderer.screen.getHeight() - 20
             ctx.fill(rx, ry, rx + 20, ry + 20, 0xaa000000.toInt())
-            ctx.drawString(Renderer.getFontRenderer(), "^", Renderer.screen.getWidth() - 12, Renderer.screen.getHeight() - 12, -1, false)
+            ctx.text(Renderer.getFontRenderer(), "^", Renderer.screen.getWidth() - 12, Renderer.screen.getHeight() - 12, -1, false)
         }
 
         val ox = middle - width / 2

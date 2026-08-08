@@ -29,6 +29,7 @@ object Mappings {
     private val unmappedClasses = mutableMapOf<String, MappedClass>()
     private val mappedToUnmappedClassNames = mutableMapOf<String, String>()
 
+    // TODO: remove this since it no longer is needed
     internal fun initialize() {
         val container = FabricLoader.getInstance().getModContainer(CTJS.MOD_ID)
         val mappingVersion = container.get().metadata.getCustomValue("${CTJS.MOD_ID}:yarn-mappings").asString

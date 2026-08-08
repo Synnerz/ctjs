@@ -5,8 +5,10 @@ import com.chattriggers.ctjs.api.message.TextComponent
 import com.chattriggers.ctjs.api.world.block.BlockType
 import com.chattriggers.ctjs.MCItem
 import com.chattriggers.ctjs.internal.utils.toIdentifier
+import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.Items
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.CommonComponents
 
 class ItemType(override val mcValue: MCItem) : CTWrapper<MCItem> {
     init {
@@ -23,7 +25,7 @@ class ItemType(override val mcValue: MCItem) : CTWrapper<MCItem> {
 
     fun getName(): String = getNameComponent().formattedText
 
-    fun getNameComponent(): TextComponent = TextComponent(mcValue.name)
+    fun getNameComponent(): TextComponent = TextComponent(mcValue.components().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY))
 
     fun getId(): Int = MCItem.getId(mcValue)
 

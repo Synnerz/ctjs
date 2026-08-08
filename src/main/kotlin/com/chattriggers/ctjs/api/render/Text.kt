@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.api.render
 
 import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.internal.utils.getOption
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Style
 import org.mozilla.javascript.NativeObject
 
@@ -147,11 +147,11 @@ class Text {
     }
 
     @JvmOverloads
-    fun draw(ctx: GuiGraphics, x: Int? = null, y: Int? = null) = apply {
+    fun draw(ctx: GuiGraphicsExtractor, x: Int? = null, y: Int? = null) = apply {
         draw(ctx, x, y, null, null)
     }
 
-    internal fun draw(ctx: GuiGraphics, x: Int? = null, y: Int? = null, backgroundX: Int? = null, backgroundWidth: Int? = null) =
+    internal fun draw(ctx: GuiGraphicsExtractor, x: Int? = null, y: Int? = null, backgroundX: Int? = null, backgroundWidth: Int? = null) =
         apply {
             ctx.pose().pushMatrix()
             ctx.pose().scale(scale, scale)
@@ -183,7 +183,7 @@ class Text {
 
             for (i in 0 until maxLines) {
                 if (i >= lines.size) break
-                ctx.drawString(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
+                ctx.text(Renderer.getFontRenderer(), lines[i], xHolder, yHolder, color.toInt(), shadow)
                 yHolder += 10
             }
             ctx.pose().popMatrix()

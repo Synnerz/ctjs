@@ -7,14 +7,13 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.state.BlockOutlineRenderState;
-import net.minecraft.client.renderer.state.LevelRenderState;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
+import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.util.profiling.ProfilerFiller;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
+import org.joml.Matrix4fc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,18 +26,18 @@ public abstract class LevelRendererMixin {
         method = "renderBlockOutline",
         at = @At(
             value = "FIELD",
-            target = "Lnet/minecraft/client/renderer/state/CameraRenderState;pos:Lnet/minecraft/world/phys/Vec3;"
+            target = "Lnet/minecraft/client/renderer/state/level/LevelRenderState;cameraRenderState:Lnet/minecraft/client/renderer/state/level/CameraRenderState;"
         ),
         cancellable = true,
         locals = LocalCapture.CAPTURE_FAILSOFT
     )
-    private void onDrawBlockOutline(MultiBufferSource.BufferSource immediate, PoseStack matrices, boolean renderBlockOutline, LevelRenderState renderStates, CallbackInfo ci, BlockOutlineRenderState outlineRenderState) {
+    private void onDrawBlockOutline(MultiBufferSource.BufferSource bufferSource, PoseStack poseStack, boolean onlyTranslucentBlocks, LevelRenderState levelRenderState, CallbackInfo ci, BlockOutlineRenderState state, BlockOutlineRenderState state2, BlockOutlineRenderState outlineRenderState) {
         if (WorldListener.INSTANCE.triggerBlockOutline(outlineRenderState.pos()))
             ci.cancel();
     }
 
     @ModifyExpressionValue(
-        method = "method_62214",
+        method = "lambda$addMainPass$0",
         at = @At(value = "NEW", target = "()Lcom/mojang/blaze3d/vertex/PoseStack;")
     )
     private PoseStack onMatrixStack(PoseStack original) {
@@ -46,13 +45,13 @@ public abstract class LevelRendererMixin {
         return original;
     }
 
-    @Inject(method = "renderLevel", at = @At("HEAD"))
-    private void beforeRender(GraphicsResourceAllocator allocator, DeltaTracker tickCounter, boolean renderBlockOutline, Camera camera, Matrix4f positionMatrix, Matrix4f matrix4f, Matrix4f projectionMatrix, GpuBufferSlice fogBuffer, Vector4f fogColor, boolean renderSky, CallbackInfo ci) {
-        WorldListener.INSTANCE.triggerRenderStart(tickCounter.getGameTimeDeltaTicks());
+    @Inject(method = "extractLevel", at = @At("HEAD"))
+    private void beforeRender(DeltaTracker deltaTracker, Camera camera, float deltaPartialTick, CallbackInfo ci) {
+        WorldListener.INSTANCE.triggerRenderStart(deltaTracker.getGameTimeDeltaTicks());
     }
 
-    @Inject(method = "method_62214", at = @At("RETURN"))
-    private void afterRender(GpuBufferSlice gpuBufferSlice, LevelRenderState levelRenderState, ProfilerFiller profilerFiller, Matrix4f matrix4f, ResourceHandle resourceHandle, ResourceHandle resourceHandle2, boolean bl, ResourceHandle resourceHandle3, ResourceHandle resourceHandle4, CallbackInfo ci) {
+    @Inject(method = "lambda$addMainPass$0", at = @At("RETURN"))
+    private void afterRender(GpuBufferSlice terrainFog, LevelRenderState levelRenderState, ProfilerFiller profiler, ChunkSectionsToRender chunkSectionsToRender, ResourceHandle entityOutlineTarget, ResourceHandle translucentTarget, ResourceHandle mainTarget, ResourceHandle itemEntityTarget, ResourceHandle particleTarget, boolean renderOutline, Matrix4fc modelViewMatrix, CallbackInfo ci) {
         WorldListener.INSTANCE.triggerRenderLast();
     }
 }

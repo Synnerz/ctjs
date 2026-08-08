@@ -2,7 +2,7 @@ package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.api.triggers.TriggerType;
 import com.chattriggers.ctjs.api.world.TabList;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Objective;
@@ -14,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerTabOverlay.class)
 public class PlayerTabOverlayMixin {
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void injectRenderPlayerList(GuiGraphics context, int scaledWindowWidth, Scoreboard scoreboard, Objective objective, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
+    private void injectRenderPlayerList(GuiGraphicsExtractor graphics, int screenWidth, Scoreboard scoreboard, Objective displayObjective, CallbackInfo ci) {
         TriggerType.RENDER_PLAYER_LIST.triggerAll(ci);
     }
 

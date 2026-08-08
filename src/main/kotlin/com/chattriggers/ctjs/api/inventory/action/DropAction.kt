@@ -1,6 +1,6 @@
 package com.chattriggers.ctjs.api.inventory.action
 
-import net.minecraft.world.inventory.ClickType
+import com.chattriggers.ctjs.MCClickType
 
 class DropAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     private var holdingCtrl = false
@@ -17,6 +17,6 @@ class DropAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     }
 
     override fun complete() {
-        doClick(if (holdingCtrl) 1 else 0, ClickType.THROW)
+        doClick(if (holdingCtrl) 1 else 0, MCClickType.THROW)
     }
 }

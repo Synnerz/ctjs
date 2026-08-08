@@ -8,6 +8,7 @@ import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.vec.Vec3f
 import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.printToConsole
+import com.chattriggers.ctjs.internal.mixins.LevelRendererAccessor
 import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.toRadians
 import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet
@@ -708,7 +709,7 @@ object Renderer {
             playerEntityRenderState,
             matrixStack.toMC(),
             Client.getMinecraft().gameRenderer.submitNodeStorage,
-            Client.getMinecraft().gameRenderer.levelRenderState.cameraRenderState
+            (Client.getMinecraft().levelRenderer as LevelRendererAccessor).levelRenderState.cameraRenderState
         )
 
         matrixStack.pop()

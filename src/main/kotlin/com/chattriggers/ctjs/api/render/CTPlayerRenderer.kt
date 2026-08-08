@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.ModelLayerLocation
 import net.minecraft.client.model.geom.ModelLayers
 import net.minecraft.client.renderer.entity.ArmorModelSet
 import net.minecraft.client.renderer.entity.state.AvatarRenderState
-import net.minecraft.client.renderer.state.CameraRenderState
 import com.mojang.blaze3d.vertex.PoseStack
 import net.minecraft.client.model.player.PlayerModel
 import net.minecraft.client.renderer.entity.layers.ArrowLayer
@@ -21,6 +20,7 @@ import net.minecraft.client.renderer.entity.layers.ParrotOnShoulderLayer
 import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer
 import net.minecraft.client.renderer.entity.layers.SpinAttackEffectLayer
 import net.minecraft.client.renderer.entity.layers.WingsLayer
+import net.minecraft.client.renderer.state.level.CameraRenderState
 
 internal class CTPlayerRenderer(
     private val ctx: EntityRendererProvider.Context,
@@ -93,20 +93,20 @@ internal class CTPlayerRenderer(
         reset()
     }
 
-    override fun submitNameTag(
-        avatarRenderState: AvatarRenderState,
+    override fun submitNameDisplay(
+        state: AvatarRenderState,
         poseStack: PoseStack,
         submitNodeCollector: SubmitNodeCollector,
-        cameraRenderState: CameraRenderState
+        camera: CameraRenderState
     ) {
         if (showNametag)
-            super.submitNameTag(avatarRenderState, poseStack, submitNodeCollector, cameraRenderState)
+            super.submitNameDisplay(state, poseStack, submitNodeCollector, camera)
     }
 
     private fun reset() {
         layers.clear()
 
-        val entityModels = ctx.blockRenderDispatcher.blockModelShaper.modelManager.entityModels().get()
+        val entityModels = ctx.modelSet
 
         if (showArmor) {
             val layer = if (slim) PLAYER_SLIM else ModelLayers.PLAYER_ARMOR

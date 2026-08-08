@@ -47,8 +47,8 @@ internal class ModifyConstantGenerator(
         }
     }
 
-    context(MethodAssembly)
+    context(methodAssembly: MethodAssembly)
     override fun generateNotAttachedBehavior() {
-        generateParameterLoad(0)
+        methodAssembly.generateParameterLoad(0)
     }
 }

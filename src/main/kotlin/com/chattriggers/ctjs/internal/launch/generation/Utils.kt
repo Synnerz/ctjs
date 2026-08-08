@@ -4,7 +4,6 @@ import com.chattriggers.ctjs.api.Mappings
 import com.chattriggers.ctjs.internal.launch.*
 import com.chattriggers.ctjs.internal.utils.descriptorString
 import net.fabricmc.loader.impl.FabricLoaderImpl
-import net.fabricmc.loader.impl.lib.accesswidener.AccessWidenerReader
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.spongepowered.asm.mixin.transformer.ClassInfo
@@ -81,27 +80,28 @@ internal object Utils {
         }
     }
 
+    // FIXME: fix access wideners not working probably
     fun widenField(mappedClass: Mappings.MappedClass, fieldName: String, isMutable: Boolean) {
         val field = mappedClass.fields[fieldName]
             ?: error("Unable to find field $fieldName in class ${mappedClass.name.original}")
 
-        FabricLoaderImpl.INSTANCE.accessWidener.visitField(
-            mappedClass.name.value,
-            field.name.value,
-            field.type.value,
-            AccessWidenerReader.AccessType.ACCESSIBLE,
-            false,
-        )
-
-        if (isMutable) {
-            FabricLoaderImpl.INSTANCE.accessWidener.visitField(
-                mappedClass.name.value,
-                field.name.value,
-                field.type.value,
-                AccessWidenerReader.AccessType.MUTABLE,
-                false,
-            )
-        }
+//        FabricLoaderImpl.INSTANCE.accessWidener.visitField(
+//            mappedClass.name.value,
+//            field.name.value,
+//            field.type.value,
+//            AccessWidenerReader.AccessType.ACCESSIBLE,
+//            false,
+//        )
+//
+//        if (isMutable) {
+//            FabricLoaderImpl.INSTANCE.accessWidener.visitField(
+//                mappedClass.name.value,
+//                field.name.value,
+//                field.type.value,
+//                AccessWidenerReader.AccessType.MUTABLE,
+//                false,
+//            )
+//        }
     }
 
     fun widenMethod(
@@ -112,23 +112,23 @@ internal object Utils {
         val descriptor = Descriptor.Parser(methodName).parseMethod(full = false)
         val mappedMethod = findMethod(mappedClass, descriptor).first
 
-        FabricLoaderImpl.INSTANCE.accessWidener.visitMethod(
-            mappedClass.name.value,
-            mappedMethod.name.value,
-            mappedMethod.toDescriptor(),
-            AccessWidenerReader.AccessType.ACCESSIBLE,
-            false,
-        )
-
-        if (isMutable) {
-            FabricLoaderImpl.INSTANCE.accessWidener.visitMethod(
-                mappedClass.name.value,
-                mappedMethod.name.value,
-                mappedMethod.toDescriptor(),
-                AccessWidenerReader.AccessType.MUTABLE,
-                false,
-            )
-        }
+//        FabricLoaderImpl.INSTANCE.accessWidener.visitMethod(
+//            mappedClass.name.value,
+//            mappedMethod.name.value,
+//            mappedMethod.toDescriptor(),
+//            AccessWidenerReader.AccessType.ACCESSIBLE,
+//            false,
+//        )
+//
+//        if (isMutable) {
+//            FabricLoaderImpl.INSTANCE.accessWidener.visitMethod(
+//                mappedClass.name.value,
+//                mappedMethod.name.value,
+//                mappedMethod.toDescriptor(),
+//                AccessWidenerReader.AccessType.MUTABLE,
+//                false,
+//            )
+//        }
     }
 
     fun findMethod(

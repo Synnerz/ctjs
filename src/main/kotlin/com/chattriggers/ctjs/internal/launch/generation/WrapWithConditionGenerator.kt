@@ -80,8 +80,8 @@ internal class WrapWithConditionGenerator(
         }
     }
 
-    context(MethodAssembly)
+    context(methodAssembly: MethodAssembly)
     override fun generateNotAttachedBehavior() {
-        ldc(1)
+        methodAssembly.ldc(1)
     }
 }

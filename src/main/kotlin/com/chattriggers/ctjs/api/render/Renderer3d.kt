@@ -4,14 +4,12 @@ import com.chattriggers.ctjs.api.client.Client
 import com.chattriggers.ctjs.api.client.Settings
 import com.chattriggers.ctjs.api.vec.Vec3f
 import com.chattriggers.ctjs.internal.utils.get
-import com.mojang.blaze3d.systems.RenderSystem
 import gg.essential.elementa.dsl.component1
 import gg.essential.elementa.dsl.component2
 import gg.essential.elementa.dsl.component3
 import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
 import net.minecraft.client.gui.Font
-import net.minecraft.client.renderer.LightTexture
 import com.mojang.blaze3d.vertex.Tesselator
 import org.joml.Vector3f
 import org.mozilla.javascript.NativeObject
@@ -265,7 +263,7 @@ object Renderer3d {
                     vertexConsumers,
                     textLayer,
                     opacity,
-                    LightTexture.FULL_BRIGHT
+                    -1
                 )
                 Renderer.translate(0f, 0f, -0.03f)
             }
@@ -280,7 +278,7 @@ object Renderer3d {
                 vertexConsumers,
                 textLayer,
                 0,
-                LightTexture.FULL_BRIGHT
+                -1
             )
             vertexConsumers.endBatch()
             Renderer.popMatrix()

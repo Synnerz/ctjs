@@ -87,14 +87,14 @@ object ClientListener : Initializer {
 
         ScreenEvents.BEFORE_INIT.register { _, screen, _, _ ->
             // TODO: Why does Renderer.drawString not work in here?
-            ScreenEvents.beforeRender(screen).register { _, ctx, mouseX, mouseY, partialTicks ->
+            ScreenEvents.beforeExtract(screen).register { _, ctx, mouseX, mouseY, partialTicks ->
                 Renderer.withMatrix(UMatrixStack(ctx.pose()).toMC(), partialTicks) {
                     TriggerType.GUI_RENDER.triggerAll(ctx, mouseX, mouseY, screen)
                 }
             }
 
             // TODO: Why does Renderer.drawString not work in here?
-            ScreenEvents.afterRender(screen).register { _, ctx, mouseX, mouseY, partialTicks ->
+            ScreenEvents.afterExtract(screen).register { _, ctx, mouseX, mouseY, partialTicks ->
                 Renderer.withMatrix(UMatrixStack(ctx.pose()).toMC(), partialTicks) {
                     TriggerType.POST_GUI_RENDER.triggerAll(ctx, mouseX, mouseY, screen, partialTicks)
                 }

@@ -45,19 +45,19 @@ internal abstract class InjectorGenerator(protected val ctx: GenerationContext, 
 
     abstract fun attachAnnotation(node: MethodNode, signature: InjectionSignature)
 
-    context(MethodAssembly)
+    context(methodAssembly: MethodAssembly)
     abstract fun generateNotAttachedBehavior()
 
-    context(ClassAssembly)
+    context(classAssembly: ClassAssembly)
     fun generate() {
         val (targetMethod, parameters, returnType, isStatic) = signature
 
-        var modifiers = private
+        var modifiers = classAssembly.private
         if (isStatic)
-            modifiers += static
+            modifiers += classAssembly.static
 
         val nameForInjection = targetMethod.name.original.replace('<', '$').replace('>', '$')
-        val methodNode = method(
+        val methodNode = classAssembly.method(
             modifiers,
             "${CTJS.MOD_ID}_${type}_${nameForInjection}_${counter++}",
             returnType.toMappedType(),
@@ -114,69 +114,69 @@ internal abstract class InjectorGenerator(protected val ctx: GenerationContext, 
         attachAnnotation(methodNode, signature)
     }
 
-    context(MethodAssembly)
+    context(methodAssembly: MethodAssembly)
     private fun generateBoxIfNecessary(descriptor: Descriptor) {
         when (descriptor) {
             Descriptor.Primitive.VOID -> throw IllegalStateException("Cannot use Void as a parameter type")
             Descriptor.Primitive.BOOLEAN ->
-                invokestatic(java.lang.Boolean::class, "valueOf", java.lang.Boolean::class, boolean)
+                methodAssembly.invokestatic(java.lang.Boolean::class, "valueOf", java.lang.Boolean::class, methodAssembly.boolean)
             Descriptor.Primitive.CHAR ->
-                invokestatic(java.lang.Character::class, "valueOf", java.lang.Character::class, char)
+                methodAssembly.invokestatic(java.lang.Character::class, "valueOf", java.lang.Character::class, methodAssembly.char)
             Descriptor.Primitive.BYTE ->
-                invokestatic(java.lang.Byte::class, "valueOf", java.lang.Byte::class, byte)
+                methodAssembly.invokestatic(java.lang.Byte::class, "valueOf", java.lang.Byte::class, methodAssembly.byte)
             Descriptor.Primitive.SHORT ->
-                invokestatic(java.lang.Short::class, "valueOf", java.lang.Short::class, short)
+                methodAssembly.invokestatic(java.lang.Short::class, "valueOf", java.lang.Short::class, methodAssembly.short)
             Descriptor.Primitive.INT ->
-                invokestatic(java.lang.Integer::class, "valueOf", java.lang.Integer::class, int)
+                methodAssembly.invokestatic(java.lang.Integer::class, "valueOf", java.lang.Integer::class, methodAssembly.int)
             Descriptor.Primitive.FLOAT ->
-                invokestatic(java.lang.Float::class, "valueOf", java.lang.Float::class, float)
+                methodAssembly.invokestatic(java.lang.Float::class, "valueOf", java.lang.Float::class, methodAssembly.float)
             Descriptor.Primitive.LONG ->
-                invokestatic(java.lang.Long::class, "valueOf", java.lang.Long::class, long)
+                methodAssembly.invokestatic(java.lang.Long::class, "valueOf", java.lang.Long::class, methodAssembly.long)
             Descriptor.Primitive.DOUBLE ->
-                invokestatic(java.lang.Double::class, "valueOf", java.lang.Double::class, double)
+                methodAssembly.invokestatic(java.lang.Double::class, "valueOf", java.lang.Double::class, methodAssembly.double)
             else -> {}
         }
     }
 
-    context(MethodAssembly)
+    context(methodAssembly: MethodAssembly)
     private fun generateUnboxIfNecessary(descriptor: Descriptor) {
         when (descriptor) {
             Descriptor.Primitive.VOID -> {}
             Descriptor.Primitive.BOOLEAN -> {
-                checkcast(java.lang.Boolean::class)
-                invokevirtual(java.lang.Boolean::class, "booleanValue", boolean)
+                methodAssembly.checkcast(java.lang.Boolean::class)
+                methodAssembly.invokevirtual(java.lang.Boolean::class, "booleanValue", methodAssembly.boolean)
             }
             is Descriptor.Primitive -> {
-                checkcast(java.lang.Number::class)
+                methodAssembly.checkcast(java.lang.Number::class)
 
                 when (descriptor) {
-                    Descriptor.Primitive.CHAR -> invokevirtual(java.lang.Number::class, "charValue", char)
-                    Descriptor.Primitive.BYTE -> invokevirtual(java.lang.Number::class, "byteValue", byte)
-                    Descriptor.Primitive.SHORT -> invokevirtual(java.lang.Number::class, "shortValue", short)
-                    Descriptor.Primitive.INT -> invokevirtual(java.lang.Number::class, "intValue", int)
-                    Descriptor.Primitive.LONG -> invokevirtual(java.lang.Number::class, "longValue", long)
-                    Descriptor.Primitive.FLOAT -> invokevirtual(java.lang.Number::class, "floatValue", float)
-                    Descriptor.Primitive.DOUBLE -> invokevirtual(java.lang.Number::class, "doubleValue", double)
+                    Descriptor.Primitive.CHAR -> methodAssembly.invokevirtual(java.lang.Number::class, "charValue", methodAssembly.char)
+                    Descriptor.Primitive.BYTE -> methodAssembly.invokevirtual(java.lang.Number::class, "byteValue", methodAssembly.byte)
+                    Descriptor.Primitive.SHORT -> methodAssembly.invokevirtual(java.lang.Number::class, "shortValue", methodAssembly.short)
+                    Descriptor.Primitive.INT -> methodAssembly.invokevirtual(java.lang.Number::class, "intValue", methodAssembly.int)
+                    Descriptor.Primitive.LONG -> methodAssembly.invokevirtual(java.lang.Number::class, "longValue", methodAssembly.long)
+                    Descriptor.Primitive.FLOAT -> methodAssembly.invokevirtual(java.lang.Number::class, "floatValue", methodAssembly.float)
+                    Descriptor.Primitive.DOUBLE -> methodAssembly.invokevirtual(java.lang.Number::class, "doubleValue", methodAssembly.double)
                     else -> throw IllegalStateException()
                 }
             }
-            else -> checkcast(descriptor.toMappedType())
+            else -> methodAssembly.checkcast(descriptor.toMappedType())
         }
     }
 
-    context(MethodAssembly)
+    context(methodAssembly: MethodAssembly)
     private fun generateReturn(returnType: Descriptor) {
         when (returnType) {
             Descriptor.Primitive.VOID -> {
-                pop
-                _return
+                methodAssembly.pop
+                methodAssembly._return
             }
-            Descriptor.Primitive.BOOLEAN -> ireturn
-            Descriptor.Primitive.LONG -> lreturn
-            Descriptor.Primitive.FLOAT -> freturn
-            Descriptor.Primitive.DOUBLE -> dreturn
-            is Descriptor.Primitive -> ireturn
-            else -> areturn
+            Descriptor.Primitive.BOOLEAN -> methodAssembly.ireturn
+            Descriptor.Primitive.LONG -> methodAssembly.lreturn
+            Descriptor.Primitive.FLOAT -> methodAssembly.freturn
+            Descriptor.Primitive.DOUBLE -> methodAssembly.dreturn
+            is Descriptor.Primitive -> methodAssembly.ireturn
+            else -> methodAssembly.areturn
         }
     }
 

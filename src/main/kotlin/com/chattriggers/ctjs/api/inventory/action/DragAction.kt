@@ -1,7 +1,6 @@
 package com.chattriggers.ctjs.api.inventory.action
 
 import com.chattriggers.ctjs.MCClickType
-import net.minecraft.world.inventory.ClickType
 
 class DragAction(slot: Int, windowId: Int) : Action(slot, windowId) {
     private lateinit var clickType: ClickType
