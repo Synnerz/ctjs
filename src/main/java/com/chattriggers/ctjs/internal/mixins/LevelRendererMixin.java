@@ -2,6 +2,7 @@ package com.chattriggers.ctjs.internal.mixins;
 
 import com.chattriggers.ctjs.internal.listeners.WorldListener;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -14,11 +15,11 @@ import net.minecraft.client.renderer.state.level.BlockOutlineRenderState;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.joml.Matrix4fc;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
@@ -26,13 +27,13 @@ public abstract class LevelRendererMixin {
         method = "renderBlockOutline",
         at = @At(
             value = "FIELD",
-            target = "Lnet/minecraft/client/renderer/state/level/LevelRenderState;cameraRenderState:Lnet/minecraft/client/renderer/state/level/CameraRenderState;"
+            target = "Lnet/minecraft/client/renderer/state/level/LevelRenderState;cameraRenderState:Lnet/minecraft/client/renderer/state/level/CameraRenderState;",
+            opcode = Opcodes.GETFIELD
         ),
-        cancellable = true,
-        locals = LocalCapture.CAPTURE_FAILSOFT
+        cancellable = true
     )
-    private void onDrawBlockOutline(MultiBufferSource.BufferSource bufferSource, PoseStack poseStack, boolean onlyTranslucentBlocks, LevelRenderState levelRenderState, CallbackInfo ci, BlockOutlineRenderState state, BlockOutlineRenderState state2, BlockOutlineRenderState outlineRenderState) {
-        if (WorldListener.INSTANCE.triggerBlockOutline(outlineRenderState.pos()))
+    private void onDrawBlockOutline(MultiBufferSource.BufferSource bufferSource, PoseStack poseStack, boolean onlyTranslucentBlocks, LevelRenderState levelRenderState, CallbackInfo ci, @Local(name = "state") BlockOutlineRenderState state) {
+        if (WorldListener.INSTANCE.triggerBlockOutline(state.pos()))
             ci.cancel();
     }
 
