@@ -7,4 +7,4 @@ pluginManagement {
 }
 
 rootProject.name = "ctjs"
-include(":typing-generator")
+//include(":typing-generator")

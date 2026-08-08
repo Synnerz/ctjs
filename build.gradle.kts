@@ -1,29 +1,29 @@
 import org.gradle.kotlin.dsl.support.unzipTo
-import org.jetbrains.dokka.versioning.VersioningConfiguration
-import org.jetbrains.dokka.versioning.VersioningPlugin
+//import org.jetbrains.dokka.versioning.VersioningConfiguration
+//import org.jetbrains.dokka.versioning.VersioningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.HttpURLConnection
 import java.io.ByteArrayOutputStream
 import java.net.URI
 
-buildscript {
-    dependencies {
-        classpath(libs.versioning)
-    }
-}
+//buildscript {
+//    dependencies {
+//        classpath(libs.versioning)
+//    }
+//}
 
 plugins {
     alias(libs.plugins.kotlin)
     alias(libs.plugins.serialization)
     alias(libs.plugins.loom)
     alias(libs.plugins.dokka)
-    alias(libs.plugins.validator)
-    alias(libs.plugins.ksp)
+//    alias(libs.plugins.validator)
+//    alias(libs.plugins.ksp)
 }
 
-if (!project.hasProperty("full")) {
-    project.gradle.startParameter.excludedTaskNames.add("kspKotlin")
-}
+//if (!project.hasProperty("full")) {
+//    project.gradle.startParameter.excludedTaskNames.add("kspKotlin")
+//}
 
 version = property("mod_version").toString()
 
@@ -49,8 +49,8 @@ dependencies {
     dokkaPlugin(libs.versioning)
 
     implementation(kotlin("stdlib-jdk8"))
-    implementation(project(":typing-generator"))
-    ksp(project(":typing-generator"))
+//    implementation(project(":typing-generator"))
+//    ksp(project(":typing-generator"))
 }
 
 loom {
@@ -68,11 +68,11 @@ java {
     targetCompatibility = JavaVersion.VERSION_25
 }
 
-apiValidation {
-    validationDisabled = true
-    ignoredProjects += "typing-generator"
-    ignoredPackages += "com.chattriggers.ctjs.internal"
-}
+//apiValidation {
+//    validationDisabled = true
+//    ignoredProjects += "typing-generator"
+//    ignoredPackages += "com.chattriggers.ctjs.internal"
+//}
 
 tasks {
     processResources {
@@ -125,11 +125,11 @@ tasks {
 
         outputDirectory.set(file(currentDocsDir))
 
-        pluginConfiguration<VersioningPlugin, VersioningConfiguration> {
-            version = project.version.toString()
-            olderVersionsDir = docVersionsDir
-            renderVersionsNavigationOnAllPages = true
-        }
+//        pluginConfiguration<VersioningPlugin, VersioningConfiguration> {
+//            version = project.version.toString()
+//            olderVersionsDir = docVersionsDir
+//            renderVersionsNavigationOnAllPages = true
+//        }
 
         suppressObviousFunctions.set(true)
         suppressInheritedMembers.set(true)
