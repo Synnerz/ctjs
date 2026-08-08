@@ -29,7 +29,10 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build
-        run: ./gradlew --no-daemon build -Pfull
+        run: |
+          java -version
+          ./gradlew --version
+          ./gradlew --no-daemon build -Pfull
 
       - name: Get Short SHA
         id: sha
