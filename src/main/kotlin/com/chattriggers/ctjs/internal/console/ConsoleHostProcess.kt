@@ -10,6 +10,7 @@ import com.chattriggers.ctjs.internal.utils.Initializer
 import kotlinx.serialization.json.Json
 import net.minecraft.client.KeyMapping
 import com.mojang.blaze3d.platform.InputConstants
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
@@ -53,10 +54,7 @@ object ConsoleHostProcess : Initializer {
     // dynamic mixin application)
     private var connected = false
     private val pendingMessages = mutableListOf<H2CMessage>()
-
-    init {
-        thread { hostMain() }
-    }
+    private val thread = thread { hostMain() }
 
     override fun init() {
         val keybind = KeyMappingHelper.registerKeyMapping(
@@ -71,6 +69,11 @@ object ConsoleHostProcess : Initializer {
         CTEvents.RENDER_GAME.register {
             if (keybind.consumeClick())
                 show()
+        }
+        ClientLifecycleEvents.CLIENT_STOPPING.register {
+            running = false
+            thread.interrupt()
+            close()
         }
     }
 

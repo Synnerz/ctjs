@@ -42,7 +42,7 @@ class Gui @JvmOverloads constructor(
 
     }
 
-    fun isOpen(): Boolean = Client.getMinecraft().screen === this
+    fun isOpen(): Boolean = Client.getMinecraft().gui.screen() === this
 
     /**
      * Registers a method to be run while gui is open.

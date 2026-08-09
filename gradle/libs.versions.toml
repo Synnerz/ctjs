@@ -1,9 +1,9 @@
 [versions]
 # Library versions
-minecraft = "26.1.2"
+minecraft = "26.2"
 
 loader = "0.19.3"
-fabric-api = "0.155.2+26.1.2"
+fabric-api = "0.156.0+26.2"
 fabric-kotlin = "1.13.10+kotlin.2.3.20"
 
 mapping-io = "0.6.1"

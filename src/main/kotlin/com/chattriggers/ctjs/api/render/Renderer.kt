@@ -8,23 +8,23 @@ import com.chattriggers.ctjs.api.message.ChatLib
 import com.chattriggers.ctjs.api.vec.Vec3f
 import com.chattriggers.ctjs.engine.LogType
 import com.chattriggers.ctjs.engine.printToConsole
+import com.chattriggers.ctjs.internal.mixins.GameRendererAccessor
 import com.chattriggers.ctjs.internal.mixins.LevelRendererAccessor
 import com.chattriggers.ctjs.internal.utils.getOrDefault
 import com.chattriggers.ctjs.internal.utils.toRadians
 import com.mojang.blaze3d.pipeline.RenderPipeline.Snippet
-import com.mojang.blaze3d.systems.RenderSystem
 import gg.essential.elementa.dsl.component1
 import gg.essential.elementa.dsl.component2
 import gg.essential.elementa.dsl.component3
 import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
 import gg.essential.universal.UMatrixStack
-import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.player.AbstractClientPlayer
 import com.mojang.blaze3d.vertex.DefaultVertexFormat
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.mozilla.javascript.NativeObject
@@ -313,7 +313,7 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun pos(x: Float, y: Float, z: Float = 0f) = apply {
-        val camera = Client.getMinecraft().gameRenderer.mainCamera.position()
+        val camera = Client.getMinecraft().gameRenderer.mainCamera().position()
         Renderer3d.pos(x + camera.x.toFloat(), y + camera.y.toFloat(), z + camera.z.toFloat())
     }
 
@@ -512,6 +512,7 @@ object Renderer {
     @JvmStatic
     @JvmOverloads
     fun drawString(
+        ctx: GuiGraphicsExtractor,
         text: String,
         x: Float,
         y: Float,
@@ -521,30 +522,30 @@ object Renderer {
         val fr = getFontRenderer()
         var newY = y
 
-        val immediate = Client.getMinecraft().renderBuffers().bufferSource()
         splitText(text).lines.forEach {
-            fr.drawInBatch(
+            val pose = ctx.pose()
+
+            pose.pushMatrix()
+            pose.translate(x, newY)
+
+            ctx.text(
+                fr,
                 it,
-                x,
-                newY,
-                color.toInt(),
-                shadow,
-                matrixStack.toMC().last().pose(),
-                immediate,
-                Font.DisplayMode.NORMAL,
                 0,
-                0xf000f0,
+                0,
+                color.toInt(),
+                shadow
             )
 
+            pose.popMatrix()
             newY += fr.lineHeight
         }
-        immediate.endBatch()
     }
 
     @JvmStatic
     @JvmOverloads
-    fun drawStringWithShadow(text: String, x: Float, y: Float, color: Long = colorized ?: WHITE) =
-        drawString(text, x, y, color, shadow = true)
+    fun drawStringWithShadow(ctx: GuiGraphicsExtractor, text: String, x: Float, y: Float, color: Long = colorized ?: WHITE) =
+        drawString(ctx, text, x, y, color, shadow = true)
 
     internal data class TextLines(val lines: List<String>, val width: Float, val height: Float)
 
@@ -676,7 +677,7 @@ object Renderer {
         }
 
         // entityRenderDispatcher.setRenderShadows(false)
-        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
+//        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
 
         // val light = 0xf000f0
 
@@ -708,13 +709,13 @@ object Renderer {
         entityRenderer.submit(
             playerEntityRenderState,
             matrixStack.toMC(),
-            Client.getMinecraft().gameRenderer.submitNodeStorage,
+            (Client.getMinecraft().gameRenderer as GameRendererAccessor).submitNodeStorage,
             (Client.getMinecraft().levelRenderer as LevelRendererAccessor).levelRenderState.cameraRenderState
         )
 
         matrixStack.pop()
 
-        vertexConsumers.endBatch()
+//        vertexConsumers.endBatch()
         // entityRenderDispatcher.setRenderShadows(true)
         matrixStack.pop()
         // TODO: find out a way to get Diffuse instance and call setType

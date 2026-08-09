@@ -42,7 +42,7 @@ dependencies {
     implementation(libs.bundles.included) { include(this) }
     implementation(include("gg.essential:vigilance:314")!!)
     implementation(include("gg.essential:elementa:750")!!)
-    implementation(include("gg.essential:universalcraft-26.1-fabric:511")!!)
+    implementation(include("gg.essential:universalcraft-26.2-fabric:511")!!)
 
 //    modApi(libs.modmenu)
 //    modRuntimeOnly(libs.devauth)

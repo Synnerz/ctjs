@@ -2,8 +2,8 @@ package com.chattriggers.ctjs.api.render
 
 import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.RenderPipeline
-import com.mojang.blaze3d.platform.DestFactor
-import com.mojang.blaze3d.platform.SourceFactor
+//import com.mojang.blaze3d.platform.DestFactor
+//import com.mojang.blaze3d.platform.SourceFactor
 import net.minecraft.client.renderer.rendertype.RenderType
 
 object LegacyPipelineBuilder {
@@ -55,7 +55,7 @@ object LegacyPipelineBuilder {
 
         val basePipeline = RenderPipeline.builder(snippet.mcSnippet)
             .withLocation("ctjs/custom/pipeline${hashCode()}")
-            .withVertexFormat(vertexFormat.toMC(), drawMode.toUC().mcMode)
+//            .withVertexFormat(vertexFormat.toMC(), drawMode.toUC().mcMode)
 //        if (blend == true) basePipeline.withBlend(BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO))
 //
 //        if (cull != null) basePipeline.withCull(cull!!)

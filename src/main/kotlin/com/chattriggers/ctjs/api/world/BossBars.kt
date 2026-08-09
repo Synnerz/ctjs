@@ -15,7 +15,7 @@ import java.util.*
 
 object BossBars {
     @JvmStatic
-    fun toMC() = Client.getMinecraft().gui.bossOverlay
+    fun toMC() = Client.getMinecraft().gui.hud.bossOverlay
 
     /**
      * Gets the list of currently shown [BossBar]s

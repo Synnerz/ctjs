@@ -11,6 +11,7 @@ import com.chattriggers.ctjs.api.world.block.Block
 import com.chattriggers.ctjs.api.world.block.BlockPos
 import com.chattriggers.ctjs.internal.Skippable
 import com.chattriggers.ctjs.internal.TooltipOverridable
+import com.chattriggers.ctjs.internal.mixins.GameRendererAccessor
 import com.chattriggers.ctjs.internal.utils.asMixin
 import net.minecraft.world.level.block.state.pattern.BlockInWorld
 import net.minecraft.client.renderer.texture.OverlayTexture
@@ -133,18 +134,19 @@ class Item(override val mcValue: ItemStack) : CTWrapper<ItemStack> {
         Renderer.pushMatrix()
         Renderer.translate(x + 8, y + 8, 150 + z)
         try {
-            val orderedRender = Client.getMinecraft().gameRenderer.submitNodeStorage
-            val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
+            val orderedRender = (Client.getMinecraft().gameRenderer as GameRendererAccessor).submitNodeStorage
+            // TODO: surely this wont be needed anymore
+//            val vertexConsumers = Client.getMinecraft().gameRenderer.renderBuffers()
             Renderer.scale(16.0f, -16.0f, 16.0f)
             if (!itemRenderState.usesBlockLight())
-                vertexConsumers.endBatch()
+//                vertexConsumers.endBatch()
                 // TODO: find out a way to get Diffuse instance and call setType
                 // DiffuseLighting.disableGuiDepthLighting()
 
             itemRenderState.submit(Renderer.matrixStack.toMC(), orderedRender, 15728880, OverlayTexture.NO_OVERLAY, 0)
 
             Renderer.disableDepth()
-            vertexConsumers.endBatch()
+//            vertexConsumers.endBatch()
             Renderer.enableDepth()
 
             if (!itemRenderState.usesBlockLight()) {

@@ -70,7 +70,7 @@ class Book {
     fun display(pageIndex: Int = 0) {
         screen = BookViewScreen(customContents)
         Client.scheduleTask {
-            Client.getMinecraft().setScreen(screen)
+            Client.getMinecraft().gui.setScreen(screen)
             screen!!.setPage(pageIndex)
         }
     }

@@ -22,7 +22,7 @@ public class MouseHandlerMixin {
         method = "onButton",
         at = @At(
             value = "FIELD",
-            target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;",
+            target = "Lnet/minecraft/client/Minecraft;gui:Lnet/minecraft/client/gui/Gui;",
             opcode = Opcodes.GETFIELD
         )
     )

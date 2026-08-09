@@ -46,10 +46,10 @@ import net.minecraft.commands.Commands
 import net.minecraft.commands.CommandSource
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.commands.arguments.AngleArgument
-import net.minecraft.commands.arguments.ColorArgument
 import net.minecraft.commands.arguments.CompoundTagArgument
 import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.GameModeArgument
+import net.minecraft.commands.arguments.HexColorArgument
 import net.minecraft.commands.arguments.IdentifierArgument
 import net.minecraft.commands.arguments.MessageArgument
 import net.minecraft.commands.arguments.NbtPathArgument
@@ -368,7 +368,7 @@ object DynamicCommands : CommandCollection() {
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:color">minecraft:color</a>
      */
     @JvmStatic
-    fun color() = ColorArgument.color()
+    fun color() = HexColorArgument.hexColor()
 
     /**
      * @see <a href="https://minecraft.wiki/w/Argument_types#minecraft:column_pos">minecraft:column_pos</a>

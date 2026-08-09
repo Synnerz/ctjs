@@ -335,7 +335,7 @@ object Player {
      * @return the currently opened container
      */
     @JvmStatic
-    fun getContainer(): Inventory? = (Client.getMinecraft().screen as? AbstractContainerScreen<*>)?.let(::Inventory)
+    fun getContainer(): Inventory? = (Client.getMinecraft().gui.screen() as? AbstractContainerScreen<*>)?.let(::Inventory)
 
     /**
      * Draws the player in the GUI. Takes the same parameters as [Renderer.drawPlayer]

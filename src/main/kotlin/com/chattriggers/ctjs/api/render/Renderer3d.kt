@@ -10,7 +10,6 @@ import gg.essential.elementa.dsl.component3
 import gg.essential.elementa.dsl.component4
 import gg.essential.universal.UGraphics
 import net.minecraft.client.gui.Font
-import com.mojang.blaze3d.vertex.Tesselator
 import org.joml.Vector3f
 import org.mozilla.javascript.NativeObject
 import java.awt.Color
@@ -19,7 +18,7 @@ object Renderer3d {
     private var firstVertex = true
     private var began = false
 
-    private val tessellator = Tesselator.getInstance()
+//    private val tessellator = Tesselator.getInstance()
     private val worldRenderer = UGraphics.getFromTessellator()
 
     /**
@@ -60,7 +59,7 @@ object Renderer3d {
             begin()
         if (!firstVertex)
             worldRenderer.endVertex()
-        val camera = Client.getMinecraft().gameRenderer.mainCamera.position()
+        val camera = Client.getMinecraft().gameRenderer.mainCamera().position()
         worldRenderer.pos(Renderer.matrixStack, x.toDouble() - camera.x, y.toDouble() - camera.y, z.toDouble() - camera.z)
         firstVertex = false
     }
@@ -214,10 +213,11 @@ object Renderer3d {
         centered: Boolean = true,
         renderThroughBlocks: Boolean = true,
     ) {
+        // TODO: this method is broke
         val (lines, width, height) = Renderer.splitText(text)
 
         val fontRenderer = Renderer.getFontRenderer()
-        val camera = Client.getMinecraft().gameRenderer.mainCamera
+        val camera = Client.getMinecraft().gameRenderer.mainCamera()
         val renderPos = Vec3f(
             x - camera.position().x.toFloat(),
             y - camera.position().y.toFloat(),
@@ -240,7 +240,7 @@ object Renderer3d {
         val xShift = -width / 2
         val yShift = -height / 2
 
-        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
+//        val vertexConsumers = Client.getMinecraft().renderBuffers().bufferSource()
         var yOffset = 0
         val textLayer = if (renderThroughBlocks) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
 
@@ -252,35 +252,35 @@ object Renderer3d {
             Renderer.pushMatrix()
             val matrix = Renderer.matrixStack.toMC().last().pose()
 
-            if (renderBlackBox) {
-                fontRenderer.drawInBatch(
-                    line,
-                    xShift - centerShift,
-                    yShift + yOffset,
-                    0x20FFFFFF,
-                    false,
-                    matrix,
-                    vertexConsumers,
-                    textLayer,
-                    opacity,
-                    -1
-                )
-                Renderer.translate(0f, 0f, -0.03f)
-            }
-
-            fontRenderer.drawInBatch(
-                line,
-                xShift - centerShift,
-                yShift + yOffset,
-                color.toInt(),
-                false,
-                matrix,
-                vertexConsumers,
-                textLayer,
-                0,
-                -1
-            )
-            vertexConsumers.endBatch()
+//            if (renderBlackBox) {
+//                fontRenderer.drawInBatch(
+//                    line,
+//                    xShift - centerShift,
+//                    yShift + yOffset,
+//                    0x20FFFFFF,
+//                    false,
+//                    matrix,
+//                    vertexConsumers,
+//                    textLayer,
+//                    opacity,
+//                    -1
+//                )
+//                Renderer.translate(0f, 0f, -0.03f)
+//            }
+//
+//            fontRenderer.drawInBatch(
+//                line,
+//                xShift - centerShift,
+//                yShift + yOffset,
+//                color.toInt(),
+//                false,
+//                matrix,
+//                vertexConsumers,
+//                textLayer,
+//                0,
+//                -1
+//            )
+//            vertexConsumers.endBatch()
             Renderer.popMatrix()
 
             yOffset += fontRenderer.lineHeight + 1
